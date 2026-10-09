@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using GonvoProect.Modles;
 using Microsoft.Maui.Controls;
@@ -16,6 +15,7 @@ public partial class MainPage : ContentPage
     Desk desk = new Desk();
 
     Label[,] symbols = new Label[SIZE, SIZE];
+    Border[,] cells = new Border[SIZE, SIZE];
 
     bool botThinking = false;
     bool gameOver = false;
@@ -93,6 +93,7 @@ public partial class MainPage : ContentPage
                 };
 
                 symbols[row, column] = symbol;
+                cells[row, column] = cell;
 
                 cell.Content = symbol;
 
@@ -118,6 +119,10 @@ public partial class MainPage : ContentPage
                     {
                         gameOver = true;
 
+                        HighlightWinningFive(1);
+
+                        await Task.Delay(1000);
+
                         await DisplayAlert(
                             "Victory!",
                             "You won!",
@@ -130,24 +135,40 @@ public partial class MainPage : ContentPage
                     // Bot's move
                     botThinking = true;
 
-                    var move = await Task.Run(
-                        () => desk.BestMove(-1));
+                    (int, int) move;
 
-                    botThinking = false;
+                    try
+                    {
+                        move = await Task.Run(
+                            () => desk.BestMove(-1));
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine(ex);
+
+                        botThinking = false;
+                        gameOver = true;
+
+                        await DisplayAlert(
+                            "Error",
+                            "The bot encountered an error. The game will restart.",
+                            "OK");
+
+                        RestartGame();
+                        return;
+                    }
 
                     int botRow = move.Item1;
                     int botColumn = move.Item2;
 
-                    // Find an empty cell if the bot's move is invalid
+                    // Validate the bot's move
                     if (!desk.InBoard(botRow, botColumn) ||
                         desk.Board[botRow, botColumn] != 0)
                     {
                         botRow = -1;
                         botColumn = -1;
 
-                        for (int i = 0;
-                             i < SIZE && botRow == -1;
-                             i++)
+                        for (int i = 0; i < SIZE && botRow == -1; i++)
                         {
                             for (int j = 0; j < SIZE; j++)
                             {
@@ -165,6 +186,7 @@ public partial class MainPage : ContentPage
                     if (botRow == -1)
                     {
                         gameOver = true;
+                        botThinking = false;
 
                         await DisplayAlert(
                             "Draw",
@@ -183,10 +205,18 @@ public partial class MainPage : ContentPage
                     if (desk.IsFive(-1))
                     {
                         gameOver = true;
+                        botThinking = false;
+
+                        HighlightWinningFive(-1);
+
+                        await Task.Delay(1000);
 
                         await ShowLoseImage();
                         return;
                     }
+
+                    // Bot has finished its move
+                    botThinking = false;
                 };
 
                 cell.GestureRecognizers.Add(tap);
@@ -196,6 +226,29 @@ public partial class MainPage : ContentPage
 
                 Board.Children.Add(cell);
             }
+        }
+    }
+
+    void HighlightWinningFive(int type)
+    {
+        var five = desk.GiveFive(type);
+
+        if (five.Item1 < 0)
+            return;
+
+        int[] dx = { 1, 0, 1, 1 };
+        int[] dy = { 0, 1, 1, -1 };
+
+        int startRow = five.Item1;
+        int startColumn = five.Item2;
+        int direction = five.Item3;
+
+        for (int k = 0; k < 5; k++)
+        {
+            int row = startRow + dx[direction] * k;
+            int column = startColumn + dy[direction] * k;
+
+            cells[row, column].BackgroundColor = Colors.LightGreen;
         }
     }
 
@@ -281,6 +334,7 @@ public partial class MainPage : ContentPage
             for (int j = 0; j < SIZE; j++)
             {
                 symbols[i, j].Text = "";
+                cells[i, j].BackgroundColor = Colors.White;
             }
         }
     }

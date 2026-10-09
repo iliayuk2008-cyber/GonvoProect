@@ -1,4 +1,5 @@
-﻿using System;
+﻿//using MetalPerformanceShadersGraph;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -53,6 +54,34 @@ namespace GonvoProect.Modles
             return false;
         }
 
+        public (int, int, int ) GiveFive( int type )
+        {
+            int[] dx = { 1, 0, 1, 1 };
+            int[] dy = { 0, 1, 1, -1 };
+
+            for (int i = 0; i < SIZE; i++)
+                for (int j = 0; j < SIZE; j++)
+                {
+                    for (int m = 0; m < 4; m++)
+                    {
+                        bool check = true;
+
+                        for (int k = 0; k < 5; k++)
+                        {
+                            int x = i + dx[m] * k;
+                            int y = j + dy[m] * k;
+                            if (!InBoard(x, y)) { check = false; break; }
+                            if (Board[x, y] != type) { check = false; break; }
+                        }
+
+                        if (check)
+                        {
+                            return (i, j, m);
+                        }
+                    }
+                }
+            return (-1, -1, -1);
+        }
         public bool CanWin( int x, int y, int type )
         {
             if (!InBoard(x, y) || Board[x, y] != 0)
@@ -86,14 +115,14 @@ namespace GonvoProect.Modles
                         int nextX = i + dx[m] * len;
                         int nextY = j + dy[m] * len;
 
-                        if (InBoard(prevX, prevY) && Board[prevX, prevY] == type) continue;
-                        if (InBoard(nextX, nextY) && Board[nextX, nextY] == type) continue;
+                        if( InBoard(prevX, prevY) && Board[prevX, prevY] == type) continue;
+                        if( InBoard(nextX, nextY) && Board[nextX, nextY] == type) continue;
 
                         int counter = 0;
-                        if (!InBoard(prevX, prevY)) counter++;
-                        if (!InBoard(nextX, nextY)) counter++;
-                        if (InBoard(prevX, prevY) && Board[prevX, prevY] == -type) counter++;
-                        if (InBoard(nextX, nextY) && Board[nextX, nextY] == -type) counter++;
+                        if( !InBoard(prevX, prevY) ) counter ++;
+                        if( !InBoard(nextX, nextY) ) counter ++;
+                        if( InBoard(prevX, prevY) && Board[prevX, prevY] == -type) counter ++;
+                        if( InBoard(nextX, nextY) && Board[nextX, nextY] == -type) counter ++;
 
                         bool check = true;
 
@@ -175,6 +204,132 @@ namespace GonvoProect.Modles
             Random random = new Random();
             return moves[random.Next(moves.Count)];
         }
+
+
+        public int NumberOfTwoType1( int type )
+        {
+            int[] dx = { 1, 0, 1, 1 };
+            int[] dy = { 0, 1, 1, -1 };
+
+            int counter = 0;
+
+            for (int i = 0; i < SIZE; i++)
+                for (int j = 0; j < SIZE; j++)
+                {
+                    if( Board[i, j] != type ) continue;
+
+                    for (int m = 0; m < 4; m++)
+                    {
+
+                        int prevX = i - dx[m];
+                        int prevY = j - dy[m];
+
+                        int nextX = i + dx[m] * 2;
+                        int nextY = j + dy[m] * 2;
+
+                        if (!InBoard(prevX, prevY) || Board[prevX, prevY] != 0) continue;
+                        if (!InBoard(nextX, nextY) || Board[nextX, nextY] != 0) continue;
+
+                        int x = i + dx[m];
+                        int y = j + dy[m];
+                        if (!InBoard(x, y) || Board[x, y] != type) continue;
+
+                        int check = 0;
+                        x = i + dx[m]*3;
+                        y = j + dy[m]*3;
+                        if (!InBoard(x, y) || Board[x, y] != 0) check++;
+                        x = i - dx[m] * 2;
+                        y = j - dy[m] * 2;
+                        if (!InBoard(x, y) || Board[x, y] != 0) check++;
+
+                        if (check < 2) counter++;
+                    }
+                }
+            return counter;
+        }
+
+        public int NumberOfTwoType2( int type )
+        {
+            int[] dx = { 1, 0, 1, 1 };
+            int[] dy = { 0, 1, 1, -1 };
+
+            int counter = 0;
+
+            for (int i = 0; i < SIZE; i++)
+                for (int j = 0; j < SIZE; j++)
+                {
+                    if (Board[i, j] != type) continue;
+
+                    for (int m = 0; m < 4; m++)
+                    {
+
+                        int prevX = i - dx[m];
+                        int prevY = j - dy[m];
+
+                        int nextX = i + dx[m] * 3;
+                        int nextY = j + dy[m] * 3;
+
+                        if (!InBoard(prevX, prevY) || Board[prevX, prevY] != 0) continue;
+                        if (!InBoard(nextX, nextY) || Board[nextX, nextY] != 0) continue;
+
+                        int x = i + dx[m];
+                        int y = j + dy[m];
+                        if (!InBoard(x, y) || Board[x, y] != 0) continue;
+
+                        x = i + dx[m] * 2;
+                        y = j + dy[m] * 2;
+                        if (!InBoard(x, y) || Board[x, y] != type) continue;
+
+                        counter++;
+
+                    }
+                }
+            return counter;
+        }
+
+        public int NumberOfSemiThree( int type )
+        {
+            int[] dx = { 1, 0, 1, 1 };
+            int[] dy = { 0, 1, 1, -1 };
+
+            int counter = 0;
+
+            for (int i = 0; i < SIZE; i++)
+                for (int j = 0; j < SIZE; j++)
+                {
+                    for (int m = 0; m < 4; m++)
+                    {
+                        int prevX = i - dx[m];
+                        int prevY = j - dy[m];
+
+                        int nextX = i + dx[m] * 4;
+                        int nextY = j + dy[m] * 4;
+
+                        int check = 0;
+
+                        if (!InBoard(prevX, prevY) || Board[prevX, prevY] != 0) check++;
+                        if (!InBoard(nextX, nextY) || Board[nextX, nextY] != 0) check++;
+
+                        if (check != 1) continue;
+
+                        check = 0;
+
+                        for( int k = 0; k < 4; k ++ )
+                        {
+                            int x = i + dx[m] * k;
+                            int y = j + dy[m] * k;
+                            if (!InBoard(x, y)) { check = -100; break; }
+                            if (Board[x,y] == -type ) { check = -100; break; }
+                            if (Board[x, y] == 0) check++;
+                        }
+                        
+                        if( check == 1 ) counter++;
+
+                    }
+                }
+            return counter;
+        }
+
         public (int, int ) BestMove( int type )
         {
 
@@ -244,7 +399,8 @@ namespace GonvoProect.Modles
             (int, int) moveProtect = (-1, -1);
             (int, int) moveAttack = (-1, -1);
 
-            int best = -1000;
+            int bestPro = -1000;
+            int bestAtt = -1000;
 
 
             for(int i = 0; i < SIZE; i++)
@@ -252,52 +408,44 @@ namespace GonvoProect.Modles
                 {
                     if (Board[i, j] != 0) continue;
 
-                    if (NumberCreatedSequence(i, j, 3, type).open > 0 ||
-                        NumberCreatedSequence(i, j, 4, type).semiopen > 0 ) continue;
+                    //if (NumberCreatedSequence(i, j, 3, type).open > 0 ||
+                    //    NumberCreatedSequence(i, j, 4, type).semiopen > 0 ) continue;
 
-                    var Mythree = NumberCreatedSequence(i, j, 3, type);
-                    var Mytwo = NumberCreatedSequence(i, j, 2, type);
+                    Board[i, j] = type;
+                    int MyOpenTwo = NumberOfTwoType1(type) + NumberOfTwoType2(type);
+                    int MySemiOpenThree = NumberOfSemiThree(type);
+                    Board[i, j] = -type;
 
-                    var Opthree = NumberCreatedSequence(i, j, 3, -type);
-                    var Optwo = NumberCreatedSequence(i, j, 2, -type);
+                    Board[i, j] = type;
+                    int OpOpenTwo = NumberOfTwoType1(-type) + NumberOfTwoType2(-type);
+                    int OpSemiOpenThree = NumberOfSemiThree(-type);
+                    Board[i, j] = 0;
 
-                    int Mysum = Mythree.semiopen + Mytwo.open;
-                    int Opsum = Opthree.semiopen + Optwo.open;
 
-                    if( best < Mysum - Opsum )
+                    int Mysum = MyOpenTwo + MySemiOpenThree;
+                    int Opsum = OpOpenTwo + OpSemiOpenThree;
+
+                    if ( bestPro < Mysum - Opsum )
                     {
-                        best = Mysum - Opsum;
+                        bestPro = Mysum - Opsum;
                         moveProtect = (i, j);
                     }
 
-                }
 
-            best = -1000;
-            for (int i = 0; i < SIZE; i++)
-                for (int j = 0; j < SIZE; j++)
-                {
-                    if (Board[i, j] != 0) continue;
-                    if (!( NumberCreatedSequence(i, j, 3, type).open > 0 ||
-                        NumberCreatedSequence(i, j, 4, type).semiopen > 0 ) ) continue;
-
-                    var Mythree = NumberCreatedSequence(i, j, 3, type);
-                    var Mytwo = NumberCreatedSequence(i, j, 2, type);
-
-                    var Opthree = NumberCreatedSequence(i, j, 3, -type);
-                    var Optwo = NumberCreatedSequence(i, j, 2, -type);
-
-                    int Mysum = Mythree.semiopen + Mytwo.open;
-                    int Opsum = Opthree.semiopen + Optwo.open;
-
-                    if (best < Mysum - Opsum)
+                    if (NumberCreatedSequence(i, j, 3, type).open > 0 ||
+                        NumberCreatedSequence(i, j, 4, type).semiopen > 0 )
                     {
-                        best = Mysum - Opsum;
-                        moveAttack = (i, j);
+                        if (bestAtt < Mysum - Opsum)
+                        {
+                            bestAtt = Mysum - Opsum;
+                            moveAttack = (i, j);
+                        }
                     }
 
                 }
 
-            if( moveAttack.Item1 != -1 && moveProtect.Item1 != -1)
+
+            if ( moveAttack.Item1 != -1 && moveProtect.Item1 != -1)
             {
                 if( Random.Shared.Next(100) < 20 )
                     return moveAttack;
@@ -312,6 +460,8 @@ namespace GonvoProect.Modles
 
             return FindAdjacentMove();
         }
+
+
 
     }
 }
