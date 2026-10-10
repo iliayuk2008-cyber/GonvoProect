@@ -9,7 +9,7 @@ namespace GonvoProect;
 
 public partial class MainPage : ContentPage
 {
-    const int SIZE = 30;
+    const int SIZE = 50;
     const int CELL_SIZE = 40;
 
     Desk desk = new Desk();
@@ -124,7 +124,7 @@ public partial class MainPage : ContentPage
 
                         HighlightWinningFive(1);
 
-                        await Task.Delay(200);
+                        await Task.Delay(100);
 
                         await ShowWinImage();
                         return;
@@ -215,7 +215,7 @@ public partial class MainPage : ContentPage
 
                         HighlightWinningFive(-1);
 
-                        await Task.Delay(200);
+                        await Task.Delay(100);
 
                         await ShowLoseImage();
                         return;

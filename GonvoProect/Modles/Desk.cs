@@ -11,7 +11,7 @@ namespace GonvoProect.Modles
 {
     internal class Desk
     {
-        const int SIZE = 30;
+        const int SIZE = 50;
        
         public int[,] Board = new int[SIZE, SIZE];
         public int[,] Moves = new int[SIZE, SIZE];
@@ -575,6 +575,19 @@ namespace GonvoProect.Modles
                 {
                     if (Moves[i, j] == 0) continue;
                     if (Board[i, j] != 0) continue;
+                    Board[i, j] = -type;
+                    int a = NumberOfOpenThreeType1(-type);
+                    int b = NumberOfOpenThreeType2(-type);
+                    int c = NumberOfSemiOpenFour(-type);
+                    Board[i, j] = 0;
+                    if (b > 0 && a + b + c > 1) return (i, j);
+                }
+
+            for (int i = 0; i < SIZE; i++)
+                for (int j = 0; j < SIZE; j++)
+                {
+                    if (Moves[i, j] == 0) continue;
+                    if (Board[i, j] != 0) continue;
                     Board[i, j] = type;
                     int a = NumberOfOpenThreeType1(type);
                     int b = NumberOfOpenThreeType2(type);
@@ -666,8 +679,6 @@ namespace GonvoProect.Modles
 
             return FindAdjacentMove();
         } //O(size^4)
-
-
 
     }
 }
