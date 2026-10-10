@@ -14,19 +14,39 @@ namespace GonvoProect.Modles
         const int SIZE = 30;
        
         public int[,] Board = new int[SIZE, SIZE];
+        public int[,] Moves = new int[SIZE, SIZE];
 
         public int player; // equal or 1 or -1
 
         public Desk() { player = 0; }
 
-        public bool InBoard( int x, int y ) // check if the point in the board
+        public bool InBoard(int x, int y) // check if the point in the board
         {
-            if( x < 0 || y < 0 ) return false;
+            if (x < 0 || y < 0) return false;
             if (x >= SIZE || y >= SIZE) return false;
             return true;
         }
 
+        public void AddMoves( int x, int y )
+        {
+            int[] dx = { 1, 1, 1, 0, 0, 0, -1, -1, -1 };
+            int[] dy = { 1, -1, 0, 1, -1, 0, 1, -1, 0 };
 
+            for( int i = 0; i < 9; i ++ )
+            {
+                int a = x + dx[i];
+                int b = y + dy[i];
+                if (!InBoard(a, b)) continue;
+                Moves[a, b] = 1;
+            }
+            for (int i = 0; i < 9; i++)
+            {
+                int a = x + 2*dx[i];
+                int b = y + 2*dy[i];
+                if (!InBoard(a, b)) continue;
+                Moves[a, b] = 1;
+            }
+        }
         public bool IsFive( int type )
         {
             int[] dx = { 1, 0, 1, 1 };
@@ -159,7 +179,7 @@ namespace GonvoProect.Modles
 
             return (newNum.open - Num.open, newNum.semiopen - Num.semiopen, newNum.closed - Num.closed);
         }
-
+        //O(size^2)
 
 
         public int CountSones()
@@ -169,7 +189,7 @@ namespace GonvoProect.Modles
                 for (int j = 0; j < SIZE; j++)
                     if (Board[i, j] != 0) counter ++;
             return counter;
-        }
+        }//O(size^2)
 
         public (int x, int y) FindAdjacentMove()
         {
@@ -203,7 +223,7 @@ namespace GonvoProect.Modles
 
             Random random = new Random();
             return moves[random.Next(moves.Count)];
-        }
+        } //O(size^2)
 
 
         public int NumberOfTwoType1( int type )
@@ -246,7 +266,7 @@ namespace GonvoProect.Modles
                     }
                 }
             return counter;
-        }
+        } // O(size^2)
 
         public int NumberOfTwoType2( int type )
         {
@@ -285,7 +305,7 @@ namespace GonvoProect.Modles
                     }
                 }
             return counter;
-        }
+        } // O(size^2)
 
         public int NumberOfSemiThree( int type )
         {
@@ -328,8 +348,157 @@ namespace GonvoProect.Modles
                     }
                 }
             return counter;
+        } // O(size^2)
+
+        public int NumberOfOpenThreeType1( int type )
+        {
+            int[] dx = { 1, 0, 1, 1 };
+            int[] dy = { 0, 1, 1, -1 };
+
+            int counter = 0;
+
+            for (int i = 0; i < SIZE; i++)
+                for (int j = 0; j < SIZE; j++)
+                {                   
+                    for (int m = 0; m < 4; m++)
+                    {
+                        bool vaild = true;
+                        for (int k = 0; k < 3; k++)
+                        {
+                            int cellX = i + dx[m] * k;
+                            int cellY = j + dy[m] * k;
+
+                            if (!InBoard(cellX, cellY) || Board[cellX, cellY] != type)
+                                vaild = false;
+                        }
+                        if (!vaild) continue;
+
+                        int prevX = i - dx[m];
+                        int prevY = j - dy[m];
+
+                        int nextX = i + dx[m] * 3;
+                        int nextY = j + dy[m] * 3;
+
+                        int check = 0;
+
+                        if (!InBoard(prevX, prevY) || Board[prevX, prevY] != 0) continue;
+                        if (!InBoard(nextX, nextY) || Board[nextX, nextY] != 0) continue;
+
+                        check = 0;
+
+                        int x = i + dx[m] * (-2);
+                        int y = j + dy[m] * (-2);
+
+
+                        if( !InBoard(x, y) || Board[x, y] != 0 ) check++;
+
+                        x = i + dx[m] * 4;
+                        y = j + dy[m] * 4;
+                        if (!InBoard(x, y) || Board[x, y] != 0) check++;
+
+                        if (check <= 1) counter++;
+                    }
+                }
+            return counter;
         }
 
+        public int NumberOfOpenThreeType2( int type )
+        {
+            int[] dx = { 1, 0, 1, 1 };
+            int[] dy = { 0, 1, 1, -1 };
+
+            int counter = 0;
+
+            for (int i = 0; i < SIZE; i++)
+                for (int j = 0; j < SIZE; j++)
+                {
+                    if (Board[i, j] != type) continue;
+                    for (int m = 0; m < 4; m++)
+                    {
+                        int check = 0;
+                        bool vaild = true;
+                        for (int k = 0; k < 4; k++)
+                        {
+                            int x = i + dx[m] * k;
+                            int y = j + dy[m] * k;
+                            if (!InBoard(x, y))
+                            {
+                                vaild = false;
+                                break;
+                            }
+
+                            if (Board[x, y] == -type) vaild = false;
+                            if (Board[x, y] == 0) check++;
+                            if (Board[x, y] == 0 && k == 3) vaild = false;
+                        }
+                        
+                        if (!vaild) continue;
+                        if (check != 1) continue;
+
+                        int prevX = i - dx[m];
+                        int prevY = j - dy[m];
+
+                        int nextX = i + dx[m] * 4;
+                        int nextY = j + dy[m] * 4;
+
+
+                        if (!InBoard(prevX, prevY) || Board[prevX, prevY] != 0) continue;
+                        if (!InBoard(nextX, nextY) || Board[nextX, nextY] != 0) continue;
+
+                        counter++;
+                    }
+                }
+            return counter;
+        }
+
+        public int NumberOfSemiOpenFour(int type)
+        {
+            int[] dx = { 1, 0, 1, 1 };
+            int[] dy = { 0, 1, 1, -1 };
+
+            HashSet<(int x, int y)> winningMoves = new();
+
+            for (int i = 0; i < SIZE; i++)
+                for (int j = 0; j < SIZE; j++)
+                    for (int m = 0; m < 4; m++)
+                    {
+                        int emptyX = -1;
+                        int emptyY = -1;
+                        int emptyCount = 0;
+                        bool valid = true;
+
+                        for (int k = 0; k < 5; k++)
+                        {
+                            int x = i + dx[m] * k;
+                            int y = j + dy[m] * k;
+
+                            if (!InBoard(x, y) ||
+                                Board[x, y] == -type)
+                            {
+                                valid = false;
+                                break;
+                            }
+
+                            if (Board[x, y] == 0)
+                            {
+                                emptyCount++;
+                                emptyX = x;
+                                emptyY = y;
+
+                                if (emptyCount > 1)
+                                {
+                                    valid = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (valid && emptyCount == 1)
+                            winningMoves.Add((emptyX, emptyY));
+                    }
+
+            return winningMoves.Count;
+        }
         public (int, int ) BestMove( int type )
         {
 
@@ -342,6 +511,8 @@ namespace GonvoProect.Modles
             for( int i = 0; i < SIZE; i ++ )
                 for( int j = 0; j < SIZE; j ++ )
                 {
+                    if (Moves[i, j] == 0) continue;
+
                     if (Board[i, j] != 0) continue;
                     if ( CanWin(i,j, type ) ) return (i,j);                  
                 }
@@ -350,6 +521,7 @@ namespace GonvoProect.Modles
             for (int i = 0; i < SIZE; i++)
                 for (int j = 0; j < SIZE; j++)
                 {
+                    if (Moves[i, j] == 0) continue;
                     if (Board[i, j] != 0) continue;
                     if (CanWin(i, j, -type)) return (i, j);
                 }
@@ -359,6 +531,7 @@ namespace GonvoProect.Modles
             for (int i = 0; i < SIZE; i++)
                 for (int j = 0; j < SIZE; j++)
                 {
+                    if (Moves[i, j] == 0) continue;
                     if (Board[i, j] != 0) continue;
                     (int open, int semiopen, int closed) n = NumberCreatedSequence(i, j, 4, type);
                     if (n.open > 0) return (i, j);
@@ -368,6 +541,7 @@ namespace GonvoProect.Modles
             for (int i = 0; i < SIZE; i++)
                 for (int j = 0; j < SIZE; j++)
                 {
+                    if (Moves[i, j] == 0) continue;
                     if (Board[i, j] != 0) continue;
                     (int open, int semiopen, int closed) n = NumberCreatedSequence(i, j, 4, -type);
                     if (n.open > 0) return (i, j);
@@ -375,26 +549,57 @@ namespace GonvoProect.Modles
             //checking if opponent can do 4 in sequnce 
 
 
-            for (int i = 0; i < SIZE; i++)
-                for (int j = 0; j < SIZE; j++)
-                {
-                    if (Board[i, j] != 0) continue;
-                    if ( NumberCreatedSequence(i, j, 4, type).semiopen +
-                        NumberCreatedSequence(i, j, 3, type).open >= 2 ) return (i, j);
-                }
+            //for (int i = 0; i < SIZE; i++)
+            //    for (int j = 0; j < SIZE; j++)
+            //    {
+            //        if (Board[i, j] != 0) continue;
+            //        if ( NumberCreatedSequence(i, j, 4, type).semiopen +
+            //            NumberCreatedSequence(i, j, 3, type).open >= 2 ) return (i, j);
+            //    }
 
             // checking if ther are a fork 
 
 
+            //for (int i = 0; i < SIZE; i++)
+            //    for (int j = 0; j < SIZE; j++)
+            //    {
+            //        if (Board[i, j] != 0) continue;
+            //        if (NumberCreatedSequence(i, j, 4, -type).semiopen +
+            //            NumberCreatedSequence(i, j, 3, -type).open >= 2) return (i, j);
+            //    }
+            // checking if oponent has a fork;
+
+
             for (int i = 0; i < SIZE; i++)
                 for (int j = 0; j < SIZE; j++)
                 {
+                    if (Moves[i, j] == 0) continue;
                     if (Board[i, j] != 0) continue;
-                    if (NumberCreatedSequence(i, j, 4, -type).semiopen +
-                        NumberCreatedSequence(i, j, 3, -type).open >= 2) return (i, j);
+                    Board[i, j] = type;
+                    int a = NumberOfOpenThreeType1(type);
+                    int b = NumberOfOpenThreeType2(type);
+                    int c = NumberOfSemiOpenFour(type);
+                    Board[i, j] = 0;
+                    if (a + b + c > 1) return (i, j);
+                    
                 }
-            // checking if oponent has a fork;
+            //check if we can do a fork;
 
+
+            for (int i = 0; i < SIZE; i++)
+                for (int j = 0; j < SIZE; j++)
+                {
+                    if (Moves[i, j] == 0) continue;
+                    if (Board[i, j] != 0) continue;
+                    Board[i, j] = -type;
+                    int a = NumberOfOpenThreeType1(-type);
+                    int b = NumberOfOpenThreeType2(-type);
+                    int c = NumberOfSemiOpenFour(-type);
+                    Board[i, j] = 0;
+                    if (a + b + c > 1) return (i, j);
+                }
+
+            //check if the opponent can do a fork;
 
             (int, int) moveProtect = (-1, -1);
             (int, int) moveAttack = (-1, -1);
@@ -406,6 +611,7 @@ namespace GonvoProect.Modles
             for(int i = 0; i < SIZE; i++)
                 for (int j = 0; j < SIZE; j++)
                 {
+                    if (Moves[i, j] == 0) continue;
                     if (Board[i, j] != 0) continue;
 
                     //if (NumberCreatedSequence(i, j, 3, type).open > 0 ||
@@ -459,7 +665,7 @@ namespace GonvoProect.Modles
                 return moveAttack;
 
             return FindAdjacentMove();
-        }
+        } //O(size^4)
 
 
 

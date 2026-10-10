@@ -20,6 +20,9 @@ public partial class MainPage : ContentPage
     bool botThinking = false;
     bool gameOver = false;
 
+    int lastBotRow = -1;
+    int lastBotColumn = -1;
+
     double startScrollX;
     double startScrollY;
 
@@ -110,29 +113,23 @@ public partial class MainPage : ContentPage
                     if (desk.Board[r, c] != 0)
                         return;
 
-                    // Player's move
                     desk.Board[r, c] = 1;
+                    desk.AddMoves(r, c);
+
                     symbols[r, c].Text = "❌";
 
-                    // Check whether the player won
                     if (desk.IsFive(1))
                     {
                         gameOver = true;
 
                         HighlightWinningFive(1);
 
-                        await Task.Delay(1000);
+                        await Task.Delay(200);
 
-                        await DisplayAlert(
-                            "Victory!",
-                            "You won!",
-                            "OK");
-
-                        RestartGame();
+                        await ShowWinImage();
                         return;
                     }
 
-                    // Bot's move
                     botThinking = true;
 
                     (int, int) move;
@@ -161,7 +158,6 @@ public partial class MainPage : ContentPage
                     int botRow = move.Item1;
                     int botColumn = move.Item2;
 
-                    // Validate the bot's move
                     if (!desk.InBoard(botRow, botColumn) ||
                         desk.Board[botRow, botColumn] != 0)
                     {
@@ -182,7 +178,6 @@ public partial class MainPage : ContentPage
                         }
                     }
 
-                    // Check whether there are empty cells left
                     if (botRow == -1)
                     {
                         gameOver = true;
@@ -197,11 +192,22 @@ public partial class MainPage : ContentPage
                         return;
                     }
 
-                    // Place the bot's move
+                    if (lastBotRow != -1 && lastBotColumn != -1)
+                    {
+                        cells[lastBotRow, lastBotColumn].BackgroundColor =
+                            Colors.White;
+                    }
+
                     desk.Board[botRow, botColumn] = -1;
+                    desk.AddMoves(botRow, botColumn);
                     symbols[botRow, botColumn].Text = "⭕";
 
-                    // Check whether the bot won
+                    lastBotRow = botRow;
+                    lastBotColumn = botColumn;
+
+                    cells[botRow, botColumn].BackgroundColor =
+                        Colors.Yellow;
+
                     if (desk.IsFive(-1))
                     {
                         gameOver = true;
@@ -209,13 +215,12 @@ public partial class MainPage : ContentPage
 
                         HighlightWinningFive(-1);
 
-                        await Task.Delay(1000);
+                        await Task.Delay(200);
 
                         await ShowLoseImage();
                         return;
                     }
 
-                    // Bot has finished its move
                     botThinking = false;
                 };
 
@@ -250,6 +255,78 @@ public partial class MainPage : ContentPage
 
             cells[row, column].BackgroundColor = Colors.LightGreen;
         }
+    }
+
+    async Task ShowWinImage()
+    {
+        var image = new Image
+        {
+            Source = "win_picture.png",
+            Aspect = Aspect.AspectFit,
+            HeightRequest = 280,
+            WidthRequest = 300
+        };
+
+        var okButton = new Button
+        {
+            Text = "OK",
+            HorizontalOptions = LayoutOptions.Fill
+        };
+
+        var popup = new ContentPage
+        {
+            BackgroundColor = Color.FromArgb("#AA000000"),
+
+            Content = new Grid
+            {
+                Children =
+                {
+                    new Border
+                    {
+                        BackgroundColor = Colors.White,
+                        Stroke = Colors.White,
+                        Padding = 20,
+                        WidthRequest = 340,
+                        HorizontalOptions = LayoutOptions.Center,
+                        VerticalOptions = LayoutOptions.Center,
+
+                        StrokeShape = new RoundRectangle
+                        {
+                            CornerRadius = 16
+                        },
+
+                        Content = new VerticalStackLayout
+                        {
+                            Spacing = 15,
+
+                            Children =
+                            {
+                                new Label
+                                {
+                                    Text = "Aura +999999 🗿",
+                                    FontSize = 32,
+                                    FontAttributes = FontAttributes.Bold,
+                                    TextColor = Colors.Black,
+                                    HorizontalTextAlignment =
+                                        TextAlignment.Center
+                                },
+
+                                image,
+                                okButton
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        okButton.Clicked += async (sender, e) =>
+        {
+            await Navigation.PopModalAsync();
+            RestartGame();
+        };
+
+        await Navigation.PushModalAsync(popup);
     }
 
     async Task ShowLoseImage()
@@ -328,6 +405,9 @@ public partial class MainPage : ContentPage
 
         botThinking = false;
         gameOver = false;
+
+        lastBotRow = -1;
+        lastBotColumn = -1;
 
         for (int i = 0; i < SIZE; i++)
         {
