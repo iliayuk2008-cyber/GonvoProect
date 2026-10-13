@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GonvoProect.Views.RegisterPage"
+             Title="RegisterPage">
+    <VerticalStackLayout>
+        <Entry
+            x:Name="NameEntry"
+            Placeholder="Enter your Name"
+            BackgroundColor="White"
+            />
+
+        <Label
+            x:Name="errName"
+            Text=""
+            TextColor="Red"
+            FontSize="12"
+          />
+
+        <Entry
+            x:Name="EmailEntry"
+            Placeholder="Enter your Email"
+            BackgroundColor="White"
+            />
+
+        <Label
+            x:Name="errEmail"
+            Text=""
+            TextColor="Red"
+            FontSize="12"
+          />
+
+        <Entry
+            x:Name="PasswordEntry"
+            Placeholder="Enter your Password"
+            BackgroundColor="White"
+            IsPassword="True"
+            />
+
+        <Label
+            x:Name="errPassword"
+            Text=""
+            TextColor="Red"
+            FontSize="12"
+          />
+
+        <Label
+            Text="Pick your bitrhday"
+            TextColor="Black"
+            FontSize="15"
+            Margin="0,0,0,15"
+          />
+
+        <DatePicker
+            x:Name="BirthdayPicker"
+            MinimumDate="1900-01-01"
+            MaximumDate="2026-12-31"
+            Margin="0,0,0,15"
+            />
+        
+        <Label
+            x:Name="errDate"
+            Text=""
+            TextColor="Red"
+            FontSize="12"
+          />
+
+        <Button
+            Text="Submit"
+            Clicked="OnSubmitClicked"
+            />
+
+        <Label
+            x:Name="successRegister"
+            Text=""
+            TextColor="Green"
+            FontSize="30"
+            Margin="0,20,0,15"
+            HorizontalOptions="Center"
+          />
+
+    </VerticalStackLayout>
+</ContentPage>

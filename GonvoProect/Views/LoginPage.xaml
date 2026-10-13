@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GonvoProect.Views.LoginPage"
+             Title="LoginPage">
+    <VerticalStackLayout>
+        <Entry
+            x:Name="EmailEntry"
+            Placeholder="Enter your Email"
+            BackgroundColor="White"
+            Margin="0,0,0,15"
+            />
+
+        <Entry
+            x:Name="PasswordEntry"
+            Placeholder="Enter your password "
+            BackgroundColor="White"
+            IsPassword="True"
+            Margin="0,0,0,15"
+            />
+
+        <Label
+            x:Name="errLogin"
+            Text=""
+            TextColor="Red"
+            FontSize="12"
+            Margin="0,0,0,15"
+          />
+
+        <Button
+            Text="Submit"
+            Clicked="OnSubmitClicked"
+            />
+
+        <Label
+            x:Name="successLogin"
+            Text=""
+            TextColor="Green"
+            FontSize="30"
+            Margin="0,20,0,15"
+            HorizontalOptions="Center"
+          />
+        <Label
+            Text="Don't have an account? Register"
+            TextColor="Blue"
+            HorizontalOptions="Center"
+            VerticalOptions="End">
+
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnRegisterClicked" />
+            </Label.GestureRecognizers>
+        </Label>
+
+    </VerticalStackLayout>
+</ContentPage>

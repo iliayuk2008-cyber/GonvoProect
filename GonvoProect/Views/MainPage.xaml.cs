@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 
-namespace GonvoProect;
+namespace GonvoProect.Views;
 
 public partial class MainPage : ContentPage
 {
