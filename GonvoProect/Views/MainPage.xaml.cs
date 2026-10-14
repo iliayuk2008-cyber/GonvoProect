@@ -10,7 +10,38 @@ namespace GonvoProect.Views;
 public partial class MainPage : ContentPage
 {
     const int SIZE = 50;
-    const int CELL_SIZE = 40;
+    const int CELL_SIZE = 44;
+
+    // The symbols nearly fill their cells.
+    const double SYMBOL_FONT_SIZE = 37;
+
+    static readonly Color BackgroundCell =
+        Color.FromArgb("#131D35");
+
+    static readonly Color NormalCellBorder =
+        Color.FromArgb("#35466F");
+
+    // Player: red crosses.
+    static readonly Color CrossColor =
+        Color.FromArgb("#FF416C");
+
+    // Bot: blue circles.
+    static readonly Color CircleColor =
+        Color.FromArgb("#36A3FF");
+
+    // Last bot move.
+    static readonly Color LastMoveBackground =
+        Color.FromArgb("#34245C");
+
+    static readonly Color LastMoveBorder =
+        Color.FromArgb("#A78BFA");
+
+    // Winning five.
+    static readonly Color WinningBackground =
+        Color.FromArgb("#164E63");
+
+    static readonly Color WinningBorder =
+        Color.FromArgb("#67E8F9");
 
     Desk desk = new Desk();
 
@@ -40,6 +71,10 @@ public partial class MainPage : ContentPage
         Loaded += OnPageLoaded;
     }
 
+    // =============================================
+    // INITIAL PAGE POSITION
+    // =============================================
+
     async void OnPageLoaded(object? sender, EventArgs e)
     {
         await Task.Delay(100);
@@ -56,8 +91,13 @@ public partial class MainPage : ContentPage
         await Scroll.ScrollToAsync(x, y, false);
     }
 
+    // =============================================
+    // CREATE THE BOARD
+    // =============================================
+
     void CreateBoard()
     {
+        // Create rows.
         for (int i = 0; i < SIZE; i++)
         {
             Board.RowDefinitions.Add(
@@ -67,6 +107,7 @@ public partial class MainPage : ContentPage
                 });
         }
 
+        // Create columns.
         for (int i = 0; i < SIZE; i++)
         {
             Board.ColumnDefinitions.Add(
@@ -76,23 +117,48 @@ public partial class MainPage : ContentPage
                 });
         }
 
+        // Create cells.
         for (int row = 0; row < SIZE; row++)
         {
             for (int column = 0; column < SIZE; column++)
             {
                 Border cell = new Border
                 {
-                    BackgroundColor = Colors.White,
-                    Stroke = Colors.Black,
-                    StrokeThickness = 1
+                    BackgroundColor = BackgroundCell,
+                    Stroke = NormalCellBorder,
+                    StrokeThickness = 1,
+                    Padding = 0,
+
+                    StrokeShape = new RoundRectangle
+                    {
+                        CornerRadius = 5
+                    }
                 };
 
                 Label symbol = new Label
                 {
                     Text = "",
-                    FontSize = 28,
-                    HorizontalTextAlignment = TextAlignment.Center,
-                    VerticalTextAlignment = TextAlignment.Center
+                    FontSize = SYMBOL_FONT_SIZE,
+                    FontAttributes = FontAttributes.Bold,
+
+                    HorizontalTextAlignment =
+                        TextAlignment.Center,
+
+                    VerticalTextAlignment =
+                        TextAlignment.Center,
+
+                    HorizontalOptions =
+                        LayoutOptions.Fill,
+
+                    VerticalOptions =
+                        LayoutOptions.Fill,
+
+                    TextColor = Colors.White,
+
+                    Padding = 0,
+                    Margin = 0,
+
+                    LineBreakMode = LineBreakMode.NoWrap
                 };
 
                 symbols[row, column] = symbol;
@@ -100,24 +166,35 @@ public partial class MainPage : ContentPage
 
                 cell.Content = symbol;
 
-                TapGestureRecognizer tap = new TapGestureRecognizer();
+                TapGestureRecognizer tap =
+                    new TapGestureRecognizer();
 
                 int r = row;
                 int c = column;
 
                 tap.Tapped += async (sender, e) =>
                 {
+                    // Ignore clicks while the game is over
+                    // or the bot is thinking.
                     if (gameOver || botThinking)
                         return;
 
+                    // Do not allow occupied cells.
                     if (desk.Board[r, c] != 0)
                         return;
+
+                    // =================================
+                    // PLAYER'S MOVE
+                    // =================================
 
                     desk.Board[r, c] = 1;
                     desk.AddMoves(r, c);
 
-                    symbols[r, c].Text = "❌";
+                    // Red cross.
+                    symbols[r, c].Text = "✕";
+                    symbols[r, c].TextColor = CrossColor;
 
+                    // Check whether the player won.
                     if (desk.IsFive(1))
                     {
                         gameOver = true;
@@ -129,6 +206,10 @@ public partial class MainPage : ContentPage
                         await ShowWinImage();
                         return;
                     }
+
+                    // =================================
+                    // BOT'S MOVE
+                    // =================================
 
                     botThinking = true;
 
@@ -158,13 +239,17 @@ public partial class MainPage : ContentPage
                     int botRow = move.Item1;
                     int botColumn = move.Item2;
 
+                    // Validate the bot's move.
                     if (!desk.InBoard(botRow, botColumn) ||
                         desk.Board[botRow, botColumn] != 0)
                     {
                         botRow = -1;
                         botColumn = -1;
 
-                        for (int i = 0; i < SIZE && botRow == -1; i++)
+                        // Find an empty cell if the move is invalid.
+                        for (int i = 0;
+                             i < SIZE && botRow == -1;
+                             i++)
                         {
                             for (int j = 0; j < SIZE; j++)
                             {
@@ -178,6 +263,7 @@ public partial class MainPage : ContentPage
                         }
                     }
 
+                    // Draw if there are no empty cells.
                     if (botRow == -1)
                     {
                         gameOver = true;
@@ -192,22 +278,51 @@ public partial class MainPage : ContentPage
                         return;
                     }
 
-                    if (lastBotRow != -1 && lastBotColumn != -1)
+                    // =================================
+                    // REMOVE OLD BOT HIGHLIGHT
+                    // =================================
+
+                    if (lastBotRow != -1 &&
+                        lastBotColumn != -1)
                     {
-                        cells[lastBotRow, lastBotColumn].BackgroundColor =
-                            Colors.White;
+                        cells[lastBotRow, lastBotColumn]
+                            .BackgroundColor = BackgroundCell;
+
+                        cells[lastBotRow, lastBotColumn]
+                            .Stroke = NormalCellBorder;
+
+                        cells[lastBotRow, lastBotColumn]
+                            .StrokeThickness = 1;
                     }
+
+                    // =================================
+                    // PLACE BOT'S CIRCLE
+                    // =================================
 
                     desk.Board[botRow, botColumn] = -1;
                     desk.AddMoves(botRow, botColumn);
-                    symbols[botRow, botColumn].Text = "⭕";
 
+                    // Blue circle.
+                    symbols[botRow, botColumn].Text = "◯";
+
+                    symbols[botRow, botColumn].TextColor =
+                        CircleColor;
+
+                    // Remember the last bot move.
                     lastBotRow = botRow;
                     lastBotColumn = botColumn;
 
-                    cells[botRow, botColumn].BackgroundColor =
-                        Colors.Yellow;
+                    // Highlight the last move.
+                    cells[botRow, botColumn]
+                        .BackgroundColor = LastMoveBackground;
 
+                    cells[botRow, botColumn]
+                        .Stroke = LastMoveBorder;
+
+                    cells[botRow, botColumn]
+                        .StrokeThickness = 2;
+
+                    // Check whether the bot won.
                     if (desk.IsFive(-1))
                     {
                         gameOver = true;
@@ -234,6 +349,10 @@ public partial class MainPage : ContentPage
         }
     }
 
+    // =============================================
+    // HIGHLIGHT THE WINNING FIVE
+    // =============================================
+
     void HighlightWinningFive(int type)
     {
         var five = desk.GiveFive(type);
@@ -253,139 +372,129 @@ public partial class MainPage : ContentPage
             int row = startRow + dx[direction] * k;
             int column = startColumn + dy[direction] * k;
 
-            cells[row, column].BackgroundColor = Colors.LightGreen;
+            if (!desk.InBoard(row, column))
+                continue;
+
+            cells[row, column].BackgroundColor =
+                WinningBackground;
+
+            cells[row, column].Stroke =
+                WinningBorder;
+
+            cells[row, column].StrokeThickness = 2;
         }
     }
 
+    // =============================================
+    // PLAYER WINS
+    // =============================================
+
     async Task ShowWinImage()
     {
-        var image = new Image
-        {
-            Source = "win_picture.png",
-            Aspect = Aspect.AspectFit,
-            HeightRequest = 280,
-            WidthRequest = 300
-        };
-
-        var okButton = new Button
-        {
-            Text = "OK",
-            HorizontalOptions = LayoutOptions.Fill
-        };
-
-        var popup = new ContentPage
-        {
-            BackgroundColor = Color.FromArgb("#AA000000"),
-
-            Content = new Grid
-            {
-                Children =
-                {
-                    new Border
-                    {
-                        BackgroundColor = Colors.White,
-                        Stroke = Colors.White,
-                        Padding = 20,
-                        WidthRequest = 340,
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
-
-                        StrokeShape = new RoundRectangle
-                        {
-                            CornerRadius = 16
-                        },
-
-                        Content = new VerticalStackLayout
-                        {
-                            Spacing = 15,
-
-                            Children =
-                            {
-                                new Label
-                                {
-                                    Text = "Aura +999999 🗿",
-                                    FontSize = 32,
-                                    FontAttributes = FontAttributes.Bold,
-                                    TextColor = Colors.Black,
-                                    HorizontalTextAlignment =
-                                        TextAlignment.Center
-                                },
-
-                                image,
-                                okButton
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
-        okButton.Clicked += async (sender, e) =>
-        {
-            await Navigation.PopModalAsync();
-            RestartGame();
-        };
-
-        await Navigation.PushModalAsync(popup);
+        await ShowResultPopup(
+            "AURA +999999 🗿",
+            "win_picture.png",
+            Color.FromArgb("#A78BFA"));
     }
+
+    // =============================================
+    // BOT WINS
+    // =============================================
 
     async Task ShowLoseImage()
     {
-        var image = new Image
+        await ShowResultPopup(
+            "The bot won!",
+            "lose_meme.jpg",
+            Color.FromArgb("#36A3FF"));
+    }
+
+    // =============================================
+    // RESULT POPUP
+    // =============================================
+
+    async Task ShowResultPopup(
+        string title,
+        string imageSource,
+        Color accentColor)
+    {
+        Image image = new Image
         {
-            Source = "lose_meme.jpg",
+            Source = imageSource,
             Aspect = Aspect.AspectFit,
-            HeightRequest = 280,
-            WidthRequest = 300
+            HeightRequest = 260,
+            WidthRequest = 280
         };
 
-        var okButton = new Button
+        Button okButton = new Button
         {
-            Text = "OK",
-            HorizontalOptions = LayoutOptions.Fill
+            Text = "PLAY AGAIN",
+
+            HorizontalOptions = LayoutOptions.Fill,
+
+            BackgroundColor = accentColor,
+            TextColor = Colors.White,
+
+            FontSize = 16,
+            FontAttributes = FontAttributes.Bold,
+
+            CornerRadius = 12,
+            HeightRequest = 48
         };
 
-        var popup = new ContentPage
+        Border popupCard = new Border
         {
-            BackgroundColor = Color.FromArgb("#AA000000"),
+            BackgroundColor = Color.FromArgb("#121B33"),
+            Stroke = accentColor,
+            StrokeThickness = 1,
+
+            Padding = 20,
+            WidthRequest = 340,
+
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = 22
+            },
+
+            Content = new VerticalStackLayout
+            {
+                Spacing = 16,
+
+                Children =
+                {
+                    new Label
+                    {
+                        Text = title,
+
+                        FontSize = 27,
+                        FontAttributes = FontAttributes.Bold,
+
+                        TextColor = accentColor,
+
+                        HorizontalTextAlignment =
+                            TextAlignment.Center
+                    },
+
+                    image,
+                    okButton
+                }
+            }
+        };
+
+        ContentPage popup = new ContentPage
+        {
+            BackgroundColor = Color.FromArgb("#E6080D1C"),
 
             Content = new Grid
             {
+                Padding = 12,
+
                 Children =
                 {
-                    new Border
-                    {
-                        BackgroundColor = Colors.White,
-                        Stroke = Colors.White,
-                        Padding = 20,
-                        WidthRequest = 340,
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
-
-                        StrokeShape = new RoundRectangle
-                        {
-                            CornerRadius = 16
-                        },
-
-                        Content = new VerticalStackLayout
-                        {
-                            Spacing = 15,
-
-                            Children =
-                            {
-                                new Label
-                                {
-                                    Text = "The bot won!",
-                                    FontSize = 24,
-                                    HorizontalTextAlignment =
-                                        TextAlignment.Center
-                                },
-
-                                image,
-                                okButton
-                            }
-                        }
-                    }
+                    popupCard
                 }
             }
         };
@@ -393,11 +502,16 @@ public partial class MainPage : ContentPage
         okButton.Clicked += async (sender, e) =>
         {
             await Navigation.PopModalAsync();
+
             RestartGame();
         };
 
         await Navigation.PushModalAsync(popup);
     }
+
+    // =============================================
+    // RESTART GAME
+    // =============================================
 
     void RestartGame()
     {
@@ -414,12 +528,26 @@ public partial class MainPage : ContentPage
             for (int j = 0; j < SIZE; j++)
             {
                 symbols[i, j].Text = "";
-                cells[i, j].BackgroundColor = Colors.White;
+                symbols[i, j].TextColor = Colors.White;
+
+                cells[i, j].BackgroundColor =
+                    BackgroundCell;
+
+                cells[i, j].Stroke =
+                    NormalCellBorder;
+
+                cells[i, j].StrokeThickness = 1;
             }
         }
     }
 
-    async void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
+    // =============================================
+    // BOARD NAVIGATION
+    // =============================================
+
+    async void OnPanUpdated(
+        object? sender,
+        PanUpdatedEventArgs e)
     {
         if (e.StatusType == GestureStatus.Started)
         {

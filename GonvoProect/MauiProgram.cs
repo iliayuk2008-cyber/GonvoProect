@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace GonvoProect.Views
+namespace GonvoProect
 {
     public static class MauiProgram
     {

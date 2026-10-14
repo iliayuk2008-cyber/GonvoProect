@@ -1,22 +1,110 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="GonvoProect.Views.MainPage">
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="GonvoProect.Views.MainPage"
+    BackgroundColor="#080D1C">
 
-    <ScrollView
-        x:Name="Scroll"
-        Orientation="Both"
-        HorizontalScrollBarVisibility="Always"
-        VerticalScrollBarVisibility="Always">
+    <Grid RowDefinitions="Auto,*"
+          Padding="12"
+          RowSpacing="12">
 
-        <Grid
-            x:Name="Board"
-            BackgroundColor="Black"
-            Padding="1">
+        <!-- Header -->
+        <Border Grid.Row="0"
+                BackgroundColor="#121B33"
+                Stroke="#5141A8"
+                StrokeThickness="1"
+                Padding="16">
 
-        </Grid>
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="18" />
+            </Border.StrokeShape>
 
-    </ScrollView>
+            <VerticalStackLayout Spacing="5">
+
+                <Label Text="TIC TAC TOE"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="#A78BFA"
+                       HorizontalTextAlignment="Center" />
+
+                <Label Text="THE ULTIMATE BATTLE"
+                       FontSize="11"
+                       CharacterSpacing="3"
+                       TextColor="#8CA4D8"
+                       HorizontalTextAlignment="Center" />
+
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="10"
+                      Margin="0,8,0,0">
+
+                    <Border Grid.Column="0"
+                            BackgroundColor="#321821"
+                            Stroke="#FF416C"
+                            StrokeThickness="1"
+                            Padding="8">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+
+                        <Label Text="✕  YOU"
+                               TextColor="#FF416C"
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                    </Border>
+
+                    <Border Grid.Column="1"
+                            BackgroundColor="#102B46"
+                            Stroke="#36A3FF"
+                            StrokeThickness="1"
+                            Padding="8">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+
+                        <Label Text="○  BOT"
+                               TextColor="#36A3FF"
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center" />
+                    </Border>
+
+                </Grid>
+
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Game board -->
+        <Border Grid.Row="1"
+                BackgroundColor="#0D1428"
+                Stroke="#34466F"
+                StrokeThickness="1"
+                Padding="5">
+
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="16" />
+            </Border.StrokeShape>
+
+            <ScrollView
+                x:Name="Scroll"
+                Orientation="Both"
+                HorizontalScrollBarVisibility="Always"
+                VerticalScrollBarVisibility="Always">
+
+                <Grid x:Name="Board"
+                      BackgroundColor="#080D1C"
+                      Padding="4"
+                      RowSpacing="2"
+                      ColumnSpacing="2" />
+
+            </ScrollView>
+
+        </Border>
+
+    </Grid>
 
 </ContentPage>

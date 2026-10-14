@@ -51,5 +51,9 @@
             </Label.GestureRecognizers>
         </Label>
 
+        <Label Style="{x:StaticResource Aura}"
+                Text="Tiki tiki"
+        />
+        
     </VerticalStackLayout>
 </ContentPage>
