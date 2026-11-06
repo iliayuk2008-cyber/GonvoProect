@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="GonvoProect.Views.GamePageSuper3by3"
+    Title="Ultimate Tic-Tac-Toe"
+    BackgroundColor="#101827">
+
+    <Grid Padding="12" RowSpacing="10">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+
+        <Label
+            Grid.Row="0"
+            Text="ULTIMATE TIC-TAC-TOE"
+            FontSize="23"
+            FontAttributes="Bold"
+            TextColor="#F3F4F6"
+            HorizontalOptions="Center"
+            HorizontalTextAlignment="Center" />
+
+        <!-- Game status -->
+
+        <Label
+            x:Name="StatusLabel"
+            Grid.Row="1"
+            Text="Your turn (X)"
+            FontSize="17"
+            FontAttributes="Bold"
+            TextColor="#F3F4F6"
+            HorizontalOptions="Center"
+            HorizontalTextAlignment="Center" />
+
+        <!-- Main board -->
+
+        <Border
+            Grid.Row="2"
+            WidthRequest="340"
+            HeightRequest="340"
+            Padding="4"
+            BackgroundColor="#0B1220"
+            Stroke="#65738A"
+            StrokeThickness="2"
+            HorizontalOptions="Center"
+            VerticalOptions="Center">
+
+            <Grid
+                x:Name="BoardGrid"
+                RowSpacing="4"
+                ColumnSpacing="4"
+                BackgroundColor="#0B1220">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+            </Grid>
+
+        </Border>
+
+        <!-- Instructions -->
+
+        <Label
+            x:Name="HelpLabel"
+            Grid.Row="3"
+            Text="Choose a cell to make your move."
+            FontSize="13"
+            TextColor="#AAB7CA"
+            HorizontalOptions="Center"
+            HorizontalTextAlignment="Center" />
+
+        <!-- New game -->
+
+        <Button
+            x:Name="NewGameButton"
+            Grid.Row="4"
+            Text="NEW GAME"
+            FontSize="16"
+            FontAttributes="Bold"
+            TextColor="White"
+            BackgroundColor="#E76F51"
+            CornerRadius="12"
+            HeightRequest="48"
+            HorizontalOptions="Fill"
+            Clicked="OnNewGameClicked" />
+
+    </Grid>
+
+</ContentPage>

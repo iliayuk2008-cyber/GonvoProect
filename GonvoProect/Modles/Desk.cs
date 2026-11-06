@@ -18,7 +18,7 @@ namespace GonvoProect.Modles
 
         public int player; // equal or 1 or -1
 
-        public Desk() { player = 0; }
+        public Desk() { player = 1; }
 
         public bool InBoard(int x, int y) // check if the point in the board
         {

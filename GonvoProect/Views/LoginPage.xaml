@@ -5,50 +5,47 @@
              Title="LoginPage">
     <VerticalStackLayout>
         <Entry
-            x:Name="EmailEntry"
+            Text="{Binding Email,Mode=TwoWay}"
             Placeholder="Enter your Email"
             BackgroundColor="White"
-            Margin="0,0,0,15"
+            Margin="0,0,0,0"
+            />
+
+        <Label
+            Text = "{Binding ErrEmail,Mode=TwoWay}"
+            TextColor="Red"
+            FontSize="12" 
             />
 
         <Entry
-            x:Name="PasswordEntry"
-            Placeholder="Enter your password "
-            BackgroundColor="White"
+            Text="{Binding Password,Mode=TwoWay}"
             IsPassword="True"
-            Margin="0,0,0,15"
+            Placeholder="Enter your Password"
+            BackgroundColor="White"
+            Margin="0,0,0,0"
             />
 
         <Label
-            x:Name="errLogin"
-            Text=""
+            Text="{Binding ErrPassword,Mode=TwoWay}"
             TextColor="Red"
-            FontSize="12"
-            Margin="0,0,0,15"
-          />
+            FontSize="12"            
+            />
 
         <Button
-            Text="Submit"
-            Clicked="OnSubmitClicked"
-            />
+            Text="Sign uppp"
+            Command="{Binding SignUpCommand}" />
 
-        <Label
-            x:Name="successLogin"
-            Text=""
-            TextColor="Green"
-            FontSize="30"
-            Margin="0,20,0,15"
-            HorizontalOptions="Center"
-          />
+
         <Label
             Text="Don't have an account? Register"
             TextColor="Blue"
-            HorizontalOptions="Center"
-            VerticalOptions="End">
+            HorizontalOptions="Center">
 
             <Label.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnRegisterClicked" />
+                <TapGestureRecognizer
+                    Command="{Binding RegisterCommand}" />
             </Label.GestureRecognizers>
+
         </Label>
 
         <Label Style="{x:StaticResource Aura}"

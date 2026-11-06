@@ -1,12 +1,124 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="GonvoProect.Views.GamePage"
-             Title="GamePage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+
+<ContentPage
+    x:Class="GonvoProect.Views.GamePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="3D Tic-Tac-Toe"
+    BackgroundColor="#0B1020">
+
+    <Grid
+        Padding="16"
+        RowDefinitions="Auto,Auto,*,Auto"
+        RowSpacing="14">
+
+        <!-- Header -->
+        <VerticalStackLayout
+            Grid.Row="0"
+            Spacing="4">
+
+            <Label
+                Text="3D TIC-TAC-TOE"
+                FontSize="26"
+                FontAttributes="Bold"
+                TextColor="#F5F7FF" />
+
+            <Label
+                Text="Four layers. Four in a row."
+                FontSize="14"
+                TextColor="#8F9DB8" />
+
+        </VerticalStackLayout>
+
+        <!-- Game status -->
+        <Border
+            Grid.Row="1"
+            Padding="12"
+            BackgroundColor="#141E32"
+            Stroke="#2D3A55"
+            StrokeThickness="1"
+            StrokeShape="RoundRectangle 14">
+
+            <Grid
+                ColumnDefinitions="*,Auto"
+                ColumnSpacing="10">
+
+                <VerticalStackLayout
+                    Spacing="3"
+                    VerticalOptions="Center">
+
+                    <Label
+                        Text="GAME STATUS"
+                        FontSize="10"
+                        FontAttributes="Bold"
+                        TextColor="#8394B5" />
+
+                    <Label
+                        x:Name="StatusLabel"
+                        Text="Your turn — place X"
+                        FontSize="15"
+                        FontAttributes="Bold"
+                        TextColor="#F5F7FF" />
+
+                </VerticalStackLayout>
+
+                <Border
+                    Grid.Column="1"
+                    Padding="10,7"
+                    BackgroundColor="#202D49"
+                    Stroke="#394B71"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    VerticalOptions="Center">
+
+                    <Label
+                        Text="YOU: X  |  CPU: O"
+                        FontSize="11"
+                        FontAttributes="Bold"
+                        TextColor="#C7D4F5" />
+
+                </Border>
+
+            </Grid>
+        </Border>
+
+        <!-- Four layers -->
+        <ScrollView
+            Grid.Row="2"
+            Orientation="Horizontal"
+            HorizontalScrollBarVisibility="Always"
+            VerticalScrollBarVisibility="Never">
+
+            <HorizontalStackLayout
+                x:Name="LayersContainer"
+                Spacing="14"
+                Padding="0,2,8,8" />
+
+        </ScrollView>
+
+        <!-- Footer -->
+        <VerticalStackLayout
+            Grid.Row="3"
+            Spacing="8">
+
+            <Button
+                Text="NEW GAME"
+                Clicked="OnNewGameClicked"
+                HeightRequest="48"
+                CornerRadius="12"
+                BackgroundColor="#697CFF"
+                TextColor="White"
+                FontAttributes="Bold"
+                FontSize="14" />
+
+            <Label
+                Text="Tap an empty cell to place X. The computer plays O."
+                FontSize="12"
+                TextColor="#8998B4"
+                HorizontalTextAlignment="Center" />
+
+        </VerticalStackLayout>
+
+    </Grid>
+
 </ContentPage>

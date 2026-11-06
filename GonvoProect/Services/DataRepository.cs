@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,8 @@ namespace GonvoProect.Services
     internal class DataRepository
     {
 
-        public static List< User > Data = new List<User>();
+        public static ObservableCollection< User > Data = new ObservableCollection<User>();
+        
 
         public static void Add( User user)
         {

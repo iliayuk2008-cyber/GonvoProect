@@ -78,7 +78,7 @@
             </VerticalStackLayout>
         </Border>
 
-        <!-- Game board -->
+        <!-- Visible board viewport -->
         <Border Grid.Row="1"
                 BackgroundColor="#0D1428"
                 Stroke="#34466F"
@@ -89,19 +89,11 @@
                 <RoundRectangle CornerRadius="16" />
             </Border.StrokeShape>
 
-            <ScrollView
-                x:Name="Scroll"
-                Orientation="Both"
-                HorizontalScrollBarVisibility="Always"
-                VerticalScrollBarVisibility="Always">
-
-                <Grid x:Name="Board"
-                      BackgroundColor="#080D1C"
-                      Padding="4"
-                      RowSpacing="2"
-                      ColumnSpacing="2" />
-
-            </ScrollView>
+            <GraphicsView
+                x:Name="Board"
+                HorizontalOptions="Fill"
+                VerticalOptions="Fill"
+                BackgroundColor="#080D1C" />
 
         </Border>
 

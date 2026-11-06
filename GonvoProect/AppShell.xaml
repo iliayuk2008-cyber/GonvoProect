@@ -7,6 +7,12 @@
     Shell.FlyoutBehavior="Locked"
     Title="GonvoProect">
 
+
+    <ShellContent
+        Title="SuperMainPage"
+        ContentTemplate="{DataTemplate local:SuperMainPage}"
+        Route="SuperMainPage" />
+
     <ShellContent
         Title="MainPage"
         ContentTemplate="{DataTemplate local:MainPage}"
@@ -21,6 +27,16 @@
         Title="Register"
         ContentTemplate="{DataTemplate local:RegisterPage}"
         Route="RegisterPage" />
+
+    <ShellContent
+        Title="GamePage"
+        ContentTemplate="{DataTemplate local:GamePage}"
+        Route="GamePage" />
+
+    <ShellContent
+       Title="GamePageSuper3by3"
+       ContentTemplate="{DataTemplate local:GamePageSuper3by3}"
+       Route="GamePageSuper3by3" />
 
 
 </Shell>

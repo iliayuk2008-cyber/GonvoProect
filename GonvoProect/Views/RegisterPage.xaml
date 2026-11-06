@@ -4,45 +4,51 @@
              x:Class="GonvoProect.Views.RegisterPage"
              Title="RegisterPage">
     <VerticalStackLayout>
+
+        <Image
+        Source="BackGround.png"
+        Aspect="AspectFill"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill"/>
+
         <Entry
-            x:Name="NameEntry"
+            Text="{Binding Name, Mode=TwoWay}"
             Placeholder="Enter your Name"
             BackgroundColor="White"
             />
 
         <Label
-            x:Name="errName"
-            Text=""
+            Text="{Binding ErrName}"
             TextColor="Red"
             FontSize="12"
           />
 
         <Entry
-            x:Name="EmailEntry"
+            Text="{Binding Email, Mode=TwoWay}"
             Placeholder="Enter your Email"
             BackgroundColor="White"
+            Margin="0,0,0,0"
             />
 
         <Label
-            x:Name="errEmail"
-            Text=""
+            Text = "{Binding ErrEmail, Mode=TwoWay}"
             TextColor="Red"
-            FontSize="12"
-          />
+            FontSize="12" 
+            />
 
         <Entry
-            x:Name="PasswordEntry"
+            Text="{Binding Password,Mode=TwoWay}"
             Placeholder="Enter your Password"
             BackgroundColor="White"
+            Margin="0,0,0,0"
             IsPassword="True"
             />
 
         <Label
-            x:Name="errPassword"
-            Text=""
+            Text = "{Binding ErrPassword,Mode=TwoWay}"
             TextColor="Red"
-            FontSize="12"
-          />
+            FontSize="12"            
+            />
 
         <Label
             Text="Pick your bitrhday"
@@ -52,27 +58,25 @@
           />
 
         <DatePicker
-            x:Name="BirthdayPicker"
+            Date="{Binding BirthDate, Mode=TwoWay}"
             MinimumDate="1900-01-01"
             MaximumDate="2026-12-31"
             Margin="0,0,0,15"
             />
         
         <Label
-            x:Name="errDate"
-            Text=""
+            Text="{Binding ErrDate}"
             TextColor="Red"
             FontSize="12"
           />
 
         <Button
-            Text="Submit"
-            Clicked="OnSubmitClicked"
+            Text="Register..."
+            Command="{Binding RegisterCommand}"
             />
 
         <Label
-            x:Name="successRegister"
-            Text=""
+            Text="{Binding SuccessReg}"
             TextColor="Green"
             FontSize="30"
             Margin="0,20,0,15"

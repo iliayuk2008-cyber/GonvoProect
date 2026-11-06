@@ -1,10 +1,13 @@
-﻿namespace GonvoProect
+﻿using GonvoProect.Views;
+
+namespace GonvoProect
 {
     public partial class AppShell : Shell
     {
         public AppShell()
         {
             InitializeComponent();
+
         }
     }
 }

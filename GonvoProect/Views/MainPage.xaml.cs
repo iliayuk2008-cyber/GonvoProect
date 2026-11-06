@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+using GonvoProect.Services;
+using System;
 using System.Threading.Tasks;
 using GonvoProect.Modles;
 using Microsoft.Maui.Controls;
@@ -9,11 +11,26 @@ namespace GonvoProect.Views;
 
 public partial class MainPage : ContentPage
 {
+    SoundService sound = new SoundService();
+
     const int SIZE = 50;
     const int CELL_SIZE = 44;
+    const int CELL_GAP = 2;
+    const int BOARD_PADDING = 4;
 
-    // The symbols nearly fill their cells.
     const double SYMBOL_FONT_SIZE = 37;
+    const double DRAG_THRESHOLD = 5;
+
+    const int STEP = CELL_SIZE + CELL_GAP;
+
+    const int BOARD_PIXEL_SIZE =
+        BOARD_PADDING * 2 +
+        SIZE * CELL_SIZE +
+        (SIZE - 1) * CELL_GAP;
+
+    // =============================================
+    // COLORS
+    // =============================================
 
     static readonly Color BackgroundCell =
         Color.FromArgb("#131D35");
@@ -21,336 +38,443 @@ public partial class MainPage : ContentPage
     static readonly Color NormalCellBorder =
         Color.FromArgb("#35466F");
 
-    // Player: red crosses.
     static readonly Color CrossColor =
         Color.FromArgb("#FF416C");
 
-    // Bot: blue circles.
     static readonly Color CircleColor =
         Color.FromArgb("#36A3FF");
 
-    // Last bot move.
     static readonly Color LastMoveBackground =
         Color.FromArgb("#34245C");
 
     static readonly Color LastMoveBorder =
         Color.FromArgb("#A78BFA");
 
-    // Winning five.
     static readonly Color WinningBackground =
         Color.FromArgb("#164E63");
 
     static readonly Color WinningBorder =
         Color.FromArgb("#67E8F9");
 
+    static readonly Color BoardBackground =
+        Color.FromArgb("#080D1C");
+
+    // =============================================
+    // GAME
+    // =============================================
+
     Desk desk = new Desk();
 
-    Label[,] symbols = new Label[SIZE, SIZE];
-    Border[,] cells = new Border[SIZE, SIZE];
+    readonly BoardDrawable boardDrawable;
 
     bool botThinking = false;
     bool gameOver = false;
 
-    int lastBotRow = -1;
-    int lastBotColumn = -1;
+    // =============================================
+    // VIEWPORT POSITION
+    // =============================================
 
-    double startScrollX;
-    double startScrollY;
+    double offsetX = 0;
+    double offsetY = 0;
+
+    bool boardCentered = false;
+
+    // =============================================
+    // INTERACTION
+    // =============================================
+
+    bool interactionActive = false;
+    bool interactionDragged = false;
+
+    PointF interactionStart;
+
+    double startOffsetX;
+    double startOffsetY;
+
+    // =============================================
+    // CONSTRUCTOR
+    // =============================================
 
     public MainPage()
     {
         InitializeComponent();
 
-        CreateBoard();
+        boardDrawable = new BoardDrawable();
 
-        PanGestureRecognizer pan = new PanGestureRecognizer();
-        pan.PanUpdated += OnPanUpdated;
+        Board.Drawable = boardDrawable;
 
-        Board.GestureRecognizers.Add(pan);
+        // GRAPHICSVIEW INTERACTIONS
 
-        Loaded += OnPageLoaded;
+        Board.StartInteraction += OnBoardStartInteraction;
+
+        Board.DragInteraction += OnBoardDragInteraction;
+
+        Board.EndInteraction += OnBoardEndInteraction;
+
+        Board.CancelInteraction += OnBoardCancelInteraction;
+
+        // BOARD SIZE
+
+        Board.SizeChanged += OnBoardSizeChanged;
     }
 
     // =============================================
-    // INITIAL PAGE POSITION
+    // INITIAL BOARD POSITION
     // =============================================
 
-    async void OnPageLoaded(object? sender, EventArgs e)
+    void OnBoardSizeChanged(object? sender, EventArgs e)
     {
-        await Task.Delay(100);
+        if (Board.Width <= 0 || Board.Height <= 0)
+            return;
 
-        double x = (Board.Width - Scroll.Width) / 2;
-        double y = (Board.Height - Scroll.Height) / 2;
+        if (!boardCentered)
+        {
+            offsetX = Math.Max(
+                0,
+                (BOARD_PIXEL_SIZE - Board.Width) / 2);
 
-        if (x < 0)
-            x = 0;
+            offsetY = Math.Max(
+                0,
+                (BOARD_PIXEL_SIZE - Board.Height) / 2);
 
-        if (y < 0)
-            y = 0;
+            boardCentered = true;
+        }
 
-        await Scroll.ScrollToAsync(x, y, false);
+        ClampOffsets();
+
+        UpdateDrawable();
     }
 
     // =============================================
-    // CREATE THE BOARD
+    // CLAMP VIEWPORT POSITION
     // =============================================
 
-    void CreateBoard()
+    void ClampOffsets()
     {
-        // Create rows.
-        for (int i = 0; i < SIZE; i++)
+        double maxX = Math.Max(
+            0,
+            BOARD_PIXEL_SIZE - Board.Width);
+
+        double maxY = Math.Max(
+            0,
+            BOARD_PIXEL_SIZE - Board.Height);
+
+        offsetX = Math.Clamp(offsetX, 0, maxX);
+        offsetY = Math.Clamp(offsetY, 0, maxY);
+    }
+
+    // =============================================
+    // UPDATE DRAWABLE
+    // =============================================
+
+    void UpdateDrawable()
+    {
+        boardDrawable.SetViewport(
+            offsetX,
+            offsetY);
+
+        Board.Invalidate();
+    }
+
+    // =============================================
+    // START INTERACTION
+    // =============================================
+
+    void OnBoardStartInteraction(
+        object? sender,
+        TouchEventArgs e)
+    {
+        if (e.Touches.Length == 0)
+            return;
+
+        interactionActive = true;
+        interactionDragged = false;
+
+        interactionStart = e.Touches[0];
+
+        startOffsetX = offsetX;
+        startOffsetY = offsetY;
+    }
+
+    // =============================================
+    // DRAG INTERACTION
+    // =============================================
+
+    void OnBoardDragInteraction(
+        object? sender,
+        TouchEventArgs e)
+    {
+        if (!interactionActive ||
+            e.Touches.Length == 0)
         {
-            Board.RowDefinitions.Add(
-                new RowDefinition
-                {
-                    Height = CELL_SIZE
-                });
+            return;
         }
 
-        // Create columns.
-        for (int i = 0; i < SIZE; i++)
+        PointF current = e.Touches[0];
+
+        double deltaX =
+            current.X - interactionStart.X;
+
+        double deltaY =
+            current.Y - interactionStart.Y;
+
+        if (!interactionDragged &&
+            deltaX * deltaX + deltaY * deltaY <
+            DRAG_THRESHOLD * DRAG_THRESHOLD)
         {
-            Board.ColumnDefinitions.Add(
-                new ColumnDefinition
-                {
-                    Width = CELL_SIZE
-                });
+            return;
         }
 
-        // Create cells.
-        for (int row = 0; row < SIZE; row++)
+        interactionDragged = true;
+
+        offsetX = startOffsetX - deltaX;
+        offsetY = startOffsetY - deltaY;
+
+        ClampOffsets();
+
+        UpdateDrawable();
+    }
+
+    // =============================================
+    // END INTERACTION
+    // =============================================
+
+    async void OnBoardEndInteraction(
+        object? sender,
+        TouchEventArgs e)
+    {
+        if (!interactionActive)
+            return;
+
+        interactionActive = false;
+
+        if (e.Touches.Length == 0)
         {
-            for (int column = 0; column < SIZE; column++)
+            interactionDragged = false;
+            return;
+        }
+
+        PointF position = e.Touches[0];
+
+        double deltaX =
+            position.X - interactionStart.X;
+
+        double deltaY =
+            position.Y - interactionStart.Y;
+
+        if (deltaX * deltaX + deltaY * deltaY >=
+            DRAG_THRESHOLD * DRAG_THRESHOLD)
+        {
+            interactionDragged = true;
+        }
+
+        if (interactionDragged)
+        {
+            interactionDragged = false;
+            return;
+        }
+
+        interactionDragged = false;
+
+        if (!e.IsInsideBounds)
+            return;
+
+        if (gameOver || botThinking)
+            return;
+
+        await HandleBoardTapAsync(position);
+    }
+
+    // =============================================
+    // CANCEL INTERACTION
+    // =============================================
+
+    void OnBoardCancelInteraction(
+        object? sender,
+        EventArgs e)
+    {
+        interactionActive = false;
+        interactionDragged = false;
+    }
+
+    // =============================================
+    // HANDLE PLAYER MOVE
+    // =============================================
+
+    async Task HandleBoardTapAsync(PointF position)
+    {
+        if (gameOver || botThinking)
+            return;
+
+        // SCREEN -> BOARD COORDINATES
+
+        double x = position.X + offsetX - BOARD_PADDING;
+        double y = position.Y + offsetY - BOARD_PADDING;
+
+        if (x < 0 || y < 0)
+            return;
+
+        int column = (int)(x / STEP);
+        int row = (int)(y / STEP);
+
+        if (row < 0 || row >= SIZE ||
+            column < 0 || column >= SIZE)
+        {
+            return;
+        }
+
+        // Ignore gaps between cells.
+
+        if (x % STEP >= CELL_SIZE ||
+            y % STEP >= CELL_SIZE)
+        {
+            return;
+        }
+
+        if (desk.Board[row, column] != 0)
+            return;
+
+        // =========================================
+        // PLAYER'S MOVE
+        // =========================================
+
+        desk.Board[row, column] = 1;
+
+        desk.AddMoves(row, column);
+
+        boardDrawable.SetCell(row, column, 1);
+
+        Board.Invalidate();
+
+        if (desk.IsFive(1))
+        {
+            gameOver = true;
+
+            HighlightWinningFive(1);
+
+            await Task.Delay(100);
+
+            await ShowWinImage();
+
+            return;
+        }
+
+        // =========================================
+        // BOT'S MOVE
+        // =========================================
+
+        botThinking = true;
+
+        (int, int) move;
+
+        try
+        {
+            move = await Task.Run(
+                () => desk.BestMove(-1));
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+
+            botThinking = false;
+            gameOver = true;
+
+            await DisplayAlert(
+                "Error",
+                "The bot encountered an error. The game will restart.",
+                "OK");
+
+            RestartGame();
+
+            return;
+        }
+
+        int botRow = move.Item1;
+        int botColumn = move.Item2;
+
+        // =========================================
+        // VALIDATE BOT MOVE
+        // =========================================
+
+        if (!desk.InBoard(botRow, botColumn) ||
+            desk.Board[botRow, botColumn] != 0)
+        {
+            botRow = -1;
+            botColumn = -1;
+
+            for (int i = 0;
+                 i < SIZE && botRow == -1;
+                 i++)
             {
-                Border cell = new Border
+                for (int j = 0; j < SIZE; j++)
                 {
-                    BackgroundColor = BackgroundCell,
-                    Stroke = NormalCellBorder,
-                    StrokeThickness = 1,
-                    Padding = 0,
-
-                    StrokeShape = new RoundRectangle
+                    if (desk.Board[i, j] == 0)
                     {
-                        CornerRadius = 5
+                        botRow = i;
+                        botColumn = j;
+                        break;
                     }
-                };
-
-                Label symbol = new Label
-                {
-                    Text = "",
-                    FontSize = SYMBOL_FONT_SIZE,
-                    FontAttributes = FontAttributes.Bold,
-
-                    HorizontalTextAlignment =
-                        TextAlignment.Center,
-
-                    VerticalTextAlignment =
-                        TextAlignment.Center,
-
-                    HorizontalOptions =
-                        LayoutOptions.Fill,
-
-                    VerticalOptions =
-                        LayoutOptions.Fill,
-
-                    TextColor = Colors.White,
-
-                    Padding = 0,
-                    Margin = 0,
-
-                    LineBreakMode = LineBreakMode.NoWrap
-                };
-
-                symbols[row, column] = symbol;
-                cells[row, column] = cell;
-
-                cell.Content = symbol;
-
-                TapGestureRecognizer tap =
-                    new TapGestureRecognizer();
-
-                int r = row;
-                int c = column;
-
-                tap.Tapped += async (sender, e) =>
-                {
-                    // Ignore clicks while the game is over
-                    // or the bot is thinking.
-                    if (gameOver || botThinking)
-                        return;
-
-                    // Do not allow occupied cells.
-                    if (desk.Board[r, c] != 0)
-                        return;
-
-                    // =================================
-                    // PLAYER'S MOVE
-                    // =================================
-
-                    desk.Board[r, c] = 1;
-                    desk.AddMoves(r, c);
-
-                    // Red cross.
-                    symbols[r, c].Text = "✕";
-                    symbols[r, c].TextColor = CrossColor;
-
-                    // Check whether the player won.
-                    if (desk.IsFive(1))
-                    {
-                        gameOver = true;
-
-                        HighlightWinningFive(1);
-
-                        await Task.Delay(100);
-
-                        await ShowWinImage();
-                        return;
-                    }
-
-                    // =================================
-                    // BOT'S MOVE
-                    // =================================
-
-                    botThinking = true;
-
-                    (int, int) move;
-
-                    try
-                    {
-                        move = await Task.Run(
-                            () => desk.BestMove(-1));
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine(ex);
-
-                        botThinking = false;
-                        gameOver = true;
-
-                        await DisplayAlert(
-                            "Error",
-                            "The bot encountered an error. The game will restart.",
-                            "OK");
-
-                        RestartGame();
-                        return;
-                    }
-
-                    int botRow = move.Item1;
-                    int botColumn = move.Item2;
-
-                    // Validate the bot's move.
-                    if (!desk.InBoard(botRow, botColumn) ||
-                        desk.Board[botRow, botColumn] != 0)
-                    {
-                        botRow = -1;
-                        botColumn = -1;
-
-                        // Find an empty cell if the move is invalid.
-                        for (int i = 0;
-                             i < SIZE && botRow == -1;
-                             i++)
-                        {
-                            for (int j = 0; j < SIZE; j++)
-                            {
-                                if (desk.Board[i, j] == 0)
-                                {
-                                    botRow = i;
-                                    botColumn = j;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    // Draw if there are no empty cells.
-                    if (botRow == -1)
-                    {
-                        gameOver = true;
-                        botThinking = false;
-
-                        await DisplayAlert(
-                            "Draw",
-                            "There are no empty cells left.",
-                            "OK");
-
-                        RestartGame();
-                        return;
-                    }
-
-                    // =================================
-                    // REMOVE OLD BOT HIGHLIGHT
-                    // =================================
-
-                    if (lastBotRow != -1 &&
-                        lastBotColumn != -1)
-                    {
-                        cells[lastBotRow, lastBotColumn]
-                            .BackgroundColor = BackgroundCell;
-
-                        cells[lastBotRow, lastBotColumn]
-                            .Stroke = NormalCellBorder;
-
-                        cells[lastBotRow, lastBotColumn]
-                            .StrokeThickness = 1;
-                    }
-
-                    // =================================
-                    // PLACE BOT'S CIRCLE
-                    // =================================
-
-                    desk.Board[botRow, botColumn] = -1;
-                    desk.AddMoves(botRow, botColumn);
-
-                    // Blue circle.
-                    symbols[botRow, botColumn].Text = "◯";
-
-                    symbols[botRow, botColumn].TextColor =
-                        CircleColor;
-
-                    // Remember the last bot move.
-                    lastBotRow = botRow;
-                    lastBotColumn = botColumn;
-
-                    // Highlight the last move.
-                    cells[botRow, botColumn]
-                        .BackgroundColor = LastMoveBackground;
-
-                    cells[botRow, botColumn]
-                        .Stroke = LastMoveBorder;
-
-                    cells[botRow, botColumn]
-                        .StrokeThickness = 2;
-
-                    // Check whether the bot won.
-                    if (desk.IsFive(-1))
-                    {
-                        gameOver = true;
-                        botThinking = false;
-
-                        HighlightWinningFive(-1);
-
-                        await Task.Delay(100);
-
-                        await ShowLoseImage();
-                        return;
-                    }
-
-                    botThinking = false;
-                };
-
-                cell.GestureRecognizers.Add(tap);
-
-                Grid.SetRow(cell, row);
-                Grid.SetColumn(cell, column);
-
-                Board.Children.Add(cell);
+                }
             }
         }
+
+        // =========================================
+        // DRAW
+        // =========================================
+
+        if (botRow == -1)
+        {
+            gameOver = true;
+            botThinking = false;
+
+            await DisplayAlert(
+                "Draw",
+                "There are no empty cells left.",
+                "OK");
+
+            RestartGame();
+
+            return;
+        }
+
+        // =========================================
+        // BOT'S MOVE
+        // =========================================
+
+        desk.Board[botRow, botColumn] = -1;
+
+        desk.AddMoves(botRow, botColumn);
+
+        boardDrawable.SetCell(
+            botRow,
+            botColumn,
+            -1);
+
+        boardDrawable.SetLastBotMove(
+            botRow,
+            botColumn);
+
+        Board.Invalidate();
+
+        if (desk.IsFive(-1))
+        {
+            gameOver = true;
+            botThinking = false;
+
+            HighlightWinningFive(-1);
+
+            await Task.Delay(100);
+
+            await ShowLoseImage();
+
+            return;
+        }
+
+        botThinking = false;
     }
 
     // =============================================
-    // HIGHLIGHT THE WINNING FIVE
+    // HIGHLIGHT WINNING FIVE
     // =============================================
 
     void HighlightWinningFive(int type)
@@ -360,29 +484,12 @@ public partial class MainPage : ContentPage
         if (five.Item1 < 0)
             return;
 
-        int[] dx = { 1, 0, 1, 1 };
-        int[] dy = { 0, 1, 1, -1 };
+        boardDrawable.HighlightWinningFive(
+            five.Item1,
+            five.Item2,
+            five.Item3);
 
-        int startRow = five.Item1;
-        int startColumn = five.Item2;
-        int direction = five.Item3;
-
-        for (int k = 0; k < 5; k++)
-        {
-            int row = startRow + dx[direction] * k;
-            int column = startColumn + dy[direction] * k;
-
-            if (!desk.InBoard(row, column))
-                continue;
-
-            cells[row, column].BackgroundColor =
-                WinningBackground;
-
-            cells[row, column].Stroke =
-                WinningBorder;
-
-            cells[row, column].StrokeThickness = 2;
-        }
+        Board.Invalidate();
     }
 
     // =============================================
@@ -403,6 +510,8 @@ public partial class MainPage : ContentPage
 
     async Task ShowLoseImage()
     {
+        await sound.PlaySound("LoseSound.mp3");
+
         await ShowResultPopup(
             "The bot won!",
             "lose_meme.jpg",
@@ -444,7 +553,9 @@ public partial class MainPage : ContentPage
 
         Border popupCard = new Border
         {
-            BackgroundColor = Color.FromArgb("#121B33"),
+            BackgroundColor =
+                Color.FromArgb("#121B33"),
+
             Stroke = accentColor,
             StrokeThickness = 1,
 
@@ -486,7 +597,8 @@ public partial class MainPage : ContentPage
 
         ContentPage popup = new ContentPage
         {
-            BackgroundColor = Color.FromArgb("#E6080D1C"),
+            BackgroundColor =
+                Color.FromArgb("#E6080D1C"),
 
             Content = new Grid
             {
@@ -520,56 +632,262 @@ public partial class MainPage : ContentPage
         botThinking = false;
         gameOver = false;
 
-        lastBotRow = -1;
-        lastBotColumn = -1;
+        boardDrawable.ClearBoard();
 
-        for (int i = 0; i < SIZE; i++)
-        {
-            for (int j = 0; j < SIZE; j++)
-            {
-                symbols[i, j].Text = "";
-                symbols[i, j].TextColor = Colors.White;
-
-                cells[i, j].BackgroundColor =
-                    BackgroundCell;
-
-                cells[i, j].Stroke =
-                    NormalCellBorder;
-
-                cells[i, j].StrokeThickness = 1;
-            }
-        }
+        Board.Invalidate();
     }
 
     // =============================================
-    // BOARD NAVIGATION
+    // GRAPHICS DRAWABLE
     // =============================================
 
-    async void OnPanUpdated(
-        object? sender,
-        PanUpdatedEventArgs e)
+    sealed class BoardDrawable : IDrawable
     {
-        if (e.StatusType == GestureStatus.Started)
+        readonly int[,] renderedBoard =
+            new int[SIZE, SIZE];
+
+        readonly bool[,] winningCells =
+            new bool[SIZE, SIZE];
+
+        int lastBotRow = -1;
+        int lastBotColumn = -1;
+
+        double offsetX = 0;
+        double offsetY = 0;
+
+        // =========================================
+        // SET VIEWPORT
+        // =========================================
+
+        public void SetViewport(
+            double x,
+            double y)
         {
-            startScrollX = Scroll.ScrollX;
-            startScrollY = Scroll.ScrollY;
+            offsetX = x;
+            offsetY = y;
         }
 
-        if (e.StatusType == GestureStatus.Running)
+        // =========================================
+        // SET CELL
+        // =========================================
+
+        public void SetCell(
+            int row,
+            int column,
+            int value)
         {
-            double newX = startScrollX - e.TotalX;
-            double newY = startScrollY - e.TotalY;
+            if (row < 0 || row >= SIZE ||
+                column < 0 || column >= SIZE)
+            {
+                return;
+            }
 
-            if (newX < 0)
-                newX = 0;
+            renderedBoard[row, column] = value;
+        }
 
-            if (newY < 0)
-                newY = 0;
+        // =========================================
+        // LAST BOT MOVE
+        // =========================================
 
-            await Scroll.ScrollToAsync(
-                newX,
-                newY,
-                false);
+        public void SetLastBotMove(
+            int row,
+            int column)
+        {
+            lastBotRow = row;
+            lastBotColumn = column;
+        }
+
+        // =========================================
+        // WINNING FIVE
+        // =========================================
+
+        public void HighlightWinningFive(
+            int startRow,
+            int startColumn,
+            int direction)
+        {
+            int[] dx = { 1, 0, 1, 1 };
+            int[] dy = { 0, 1, 1, -1 };
+
+            if (direction < 0 || direction >= 4)
+                return;
+
+            for (int k = 0; k < 5; k++)
+            {
+                int row =
+                    startRow + dx[direction] * k;
+
+                int column =
+                    startColumn + dy[direction] * k;
+
+                if (row < 0 || row >= SIZE ||
+                    column < 0 || column >= SIZE)
+                {
+                    continue;
+                }
+
+                winningCells[row, column] = true;
+            }
+        }
+
+        // =========================================
+        // CLEAR BOARD
+        // =========================================
+
+        public void ClearBoard()
+        {
+            Array.Clear(
+                renderedBoard,
+                0,
+                renderedBoard.Length);
+
+            Array.Clear(
+                winningCells,
+                0,
+                winningCells.Length);
+
+            lastBotRow = -1;
+            lastBotColumn = -1;
+        }
+
+        // =========================================
+        // DRAW
+        // =========================================
+
+        public void Draw(
+            ICanvas canvas,
+            RectF dirtyRect)
+        {
+            canvas.FillColor = BoardBackground;
+
+            canvas.FillRectangle(dirtyRect);
+
+            canvas.Font =
+                Microsoft.Maui.Graphics.Font.DefaultBold;
+
+            canvas.FontSize =
+                (float)SYMBOL_FONT_SIZE;
+
+            // Determine visible cells.
+
+            int firstColumn = Math.Max(
+                0,
+                (int)Math.Floor(
+                    (offsetX - BOARD_PADDING - CELL_SIZE) / STEP) + 1);
+
+            int firstRow = Math.Max(
+                0,
+                (int)Math.Floor(
+                    (offsetY - BOARD_PADDING - CELL_SIZE) / STEP) + 1);
+
+            int lastColumn = Math.Min(
+                SIZE - 1,
+                (int)Math.Ceiling(
+                    (offsetX + dirtyRect.Width - BOARD_PADDING) / STEP) - 1);
+
+            int lastRow = Math.Min(
+                SIZE - 1,
+                (int)Math.Ceiling(
+                    (offsetY + dirtyRect.Height - BOARD_PADDING) / STEP) - 1);
+
+            if (firstColumn > lastColumn ||
+                firstRow > lastRow)
+            {
+                return;
+            }
+
+            // Draw only visible cells.
+
+            for (int row = firstRow;
+                 row <= lastRow;
+                 row++)
+            {
+                for (int column = firstColumn;
+                     column <= lastColumn;
+                     column++)
+                {
+                    float x = (float)(
+                        BOARD_PADDING +
+                        column * STEP -
+                        offsetX);
+
+                    float y = (float)(
+                        BOARD_PADDING +
+                        row * STEP -
+                        offsetY);
+
+                    RectF cellRect = new RectF(
+                        x,
+                        y,
+                        CELL_SIZE,
+                        CELL_SIZE);
+
+                    Color background = BackgroundCell;
+                    Color border = NormalCellBorder;
+
+                    float borderThickness = 1;
+
+                    // Last bot move.
+
+                    if (row == lastBotRow &&
+                        column == lastBotColumn)
+                    {
+                        background = LastMoveBackground;
+                        border = LastMoveBorder;
+
+                        borderThickness = 2;
+                    }
+
+                    // Winning five.
+
+                    if (winningCells[row, column])
+                    {
+                        background = WinningBackground;
+                        border = WinningBorder;
+
+                        borderThickness = 2;
+                    }
+
+                    // Cell background.
+
+                    canvas.FillColor = background;
+
+                    canvas.FillRoundedRectangle(
+                        cellRect,
+                        5);
+
+                    // Cell border.
+
+                    canvas.StrokeColor = border;
+                    canvas.StrokeSize = borderThickness;
+
+                    canvas.DrawRoundedRectangle(
+                        cellRect,
+                        5);
+
+                    // Draw symbol.
+
+                    int value =
+                        renderedBoard[row, column];
+
+                    if (value == 0)
+                        continue;
+
+                    canvas.FontColor =
+                        value == 1
+                            ? CrossColor
+                            : CircleColor;
+
+                    string symbol =
+                        value == 1 ? "✕" : "◯";
+
+                    canvas.DrawString(
+                        symbol,
+                        cellRect,
+                        HorizontalAlignment.Center,
+                        VerticalAlignment.Center);
+                }
+            }
         }
     }
 }
