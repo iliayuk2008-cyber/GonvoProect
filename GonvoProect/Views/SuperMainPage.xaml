@@ -15,7 +15,7 @@
             
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Label Text="{Binding Name}"/>
+                    <Label Text="{Binding Username}"/>
                     
 
                 </DataTemplate>

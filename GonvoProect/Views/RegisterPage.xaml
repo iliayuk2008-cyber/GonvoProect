@@ -1,87 +1,303 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="GonvoProect.Views.RegisterPage"
-             Title="RegisterPage">
-    <VerticalStackLayout>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="GonvoProect.Views.RegisterPage"
+    Shell.NavBarIsVisible="False">
+
+    <Grid>
 
         <Image
-        Source="BackGround.png"
-        Aspect="AspectFill"
-        HorizontalOptions="Fill"
-        VerticalOptions="Fill"/>
+            Source="background.png"
+            Aspect="AspectFill"/>
 
-        <Entry
-            Text="{Binding Name, Mode=TwoWay}"
-            Placeholder="Enter your Name"
-            BackgroundColor="White"
-            />
+        <BoxView
+        Color="#08091E"
+        Opacity="0.35"
+        InputTransparent="True"/>
 
-        <Label
-            Text="{Binding ErrName}"
-            TextColor="Red"
-            FontSize="12"
-          />
 
-        <Entry
-            Text="{Binding Email, Mode=TwoWay}"
-            Placeholder="Enter your Email"
-            BackgroundColor="White"
-            Margin="0,0,0,0"
-            />
+        <ScrollView>
 
-        <Label
-            Text = "{Binding ErrEmail, Mode=TwoWay}"
-            TextColor="Red"
-            FontSize="12" 
-            />
+            <VerticalStackLayout
+                Padding="27,20,27,25"
+                Spacing="0"
+                HorizontalOptions="Center">
 
-        <Entry
-            Text="{Binding Password,Mode=TwoWay}"
-            Placeholder="Enter your Password"
-            BackgroundColor="White"
-            Margin="0,0,0,0"
-            IsPassword="True"
-            />
 
-        <Label
-            Text = "{Binding ErrPassword,Mode=TwoWay}"
-            TextColor="Red"
-            FontSize="12"            
-            />
+                <Image
+                Source="logopic.png"
+                WidthRequest="110"
+                HeightRequest="75"
+                Aspect="AspectFit"
+                HorizontalOptions="Center"/>
 
-        <Label
-            Text="Pick your bitrhday"
-            TextColor="Black"
-            FontSize="15"
-            Margin="0,0,0,15"
-          />
 
-        <DatePicker
-            Date="{Binding BirthDate, Mode=TwoWay}"
-            MinimumDate="1900-01-01"
-            MaximumDate="2026-12-31"
-            Margin="0,0,0,15"
-            />
-        
-        <Label
-            Text="{Binding ErrDate}"
-            TextColor="Red"
-            FontSize="12"
-          />
+                <Label
+                Text="GONVO"
+                FontFamily="InterBold"
+                FontSize="29"
+                TextColor="White"
+                HorizontalOptions="Center"/>
 
-        <Button
-            Text="Register..."
-            Command="{Binding RegisterCommand}"
-            />
 
-        <Label
-            Text="{Binding SuccessReg}"
-            TextColor="Green"
-            FontSize="30"
-            Margin="0,20,0,15"
-            HorizontalOptions="Center"
-          />
+                <Label
+                Text="Create Account"
+                FontFamily="InterSemiBold"
+                FontSize="19"
+                TextColor="White"
+                HorizontalOptions="Center"
+                Margin="0,15,0,0"/>
 
-    </VerticalStackLayout>
+
+                <Label
+                Text="Join the GONVO community"
+                FontFamily="InterRegular"
+                FontSize="13"
+                TextColor="#A7A4CF"
+                HorizontalOptions="Center"
+                Margin="0,3,0,22"/>
+
+                <VerticalStackLayout
+                    Spacing="2"
+                    Margin="0,0,0,5">
+                    
+                    <Border Style="{StaticResource BeautifulEntry}">
+
+                        <Grid ColumnDefinitions="24,*"
+                              ColumnSpacing="0">
+
+
+                            <Image
+                            Source="username.png"
+                            Style="{StaticResource Icona}"/>
+                            
+                            <Entry
+                            Grid.Column="1"
+                            Placeholder="User name"
+                            Text="{Binding Username, Mode=TwoWay}"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            PlaceholderColor="#A7A4CF"/>
+                            
+                        </Grid>
+                        
+                    </Border>
+
+                    <Label
+                    Text="{Binding ErrUsername, Mode=TwoWay}"
+                    FontFamily="InterRegular"
+                    FontSize="14"
+                    TextColor="{StaticResource ErrorColor}"
+                    IsVisible="{Binding ErrUsernameVis, Mode=TwoWay}"
+                    Margin="11, 0, 0, 0"/>
+                </VerticalStackLayout>
+                
+               
+
+                <VerticalStackLayout
+                    Spacing="2"
+                    Margin="0,0,0,8">
+                    
+                    <Border Style="{StaticResource BeautifulEntry}">
+
+                        <Grid ColumnDefinitions="24,*"
+                              ColumnSpacing="0">
+
+
+                            <Image
+                            Source="email.png"
+                            Style="{StaticResource Icona}"/>
+
+                            <Entry
+                            Grid.Column="1"
+                            Placeholder="Email"
+                            Text="{Binding Email, Mode=TwoWay}"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            PlaceholderColor="#A7A4CF"/>
+
+                        </Grid>
+                        
+                    </Border>
+
+                    <Label
+                    Text="{Binding ErrEmail, Mode=TwoWay}"
+                    FontFamily="InterRegular"
+                    FontSize="14"
+                    TextColor="{StaticResource ErrorColor}"
+                    IsVisible="{Binding ErrEmailVis, Mode=TwoWay}"
+                    Margin="11, 0, 0, 0"/>
+
+                </VerticalStackLayout>
+
+
+                <VerticalStackLayout
+                    Spacing="2"
+                    Margin="0,0,0,8">
+
+                    <Border Style="{StaticResource BeautifulEntry}">
+
+                        <Grid ColumnDefinitions="24,*,30"
+                              ColumnSpacing="0">
+
+
+                            <Image
+                            Source="password.png"
+                            Style="{StaticResource Icona}"/>
+
+                            <Entry
+                            Grid.Column="1"
+                            Placeholder="Password"
+                            IsPassword="{Binding IsPasswordHidden}"    
+                            Text="{Binding Password, Mode=TwoWay}"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            PlaceholderColor="#A7A4CF"/>
+
+                            <ImageButton
+                            Grid.Column="2"
+                            Source="{Binding PasswordEyeIcona}"
+                            Command="{Binding EyeClickCommand}"
+                            BackgroundColor="Transparent"
+                            WidthRequest="30"
+                            HeightRequest="30"
+                            Padding="0"/>
+
+                        </Grid>
+
+                    </Border>
+
+                    <Label
+                   Text="{Binding ErrPassword, Mode=TwoWay}"
+                   FontFamily="InterRegular"
+                   FontSize="14"
+                   TextColor="{StaticResource ErrorColor}"
+                   IsVisible="{Binding ErrPasswordVis, Mode=TwoWay}"
+                   Margin="11, 0, 0, 0"/>
+
+                </VerticalStackLayout>
+
+                <VerticalStackLayout
+                    Spacing="2"
+                    Margin="0,0,0,8">
+
+                    <Border Style="{StaticResource BeautifulEntry}">
+
+                        <Grid ColumnDefinitions="24,*"
+                              ColumnSpacing="0">
+
+
+                            <Image
+                            Source="confirm.png"
+                            Style="{StaticResource Icona}"/>
+
+                            <Entry
+                            Grid.Column="1"
+                            Placeholder="Confirm Password"
+                            Text="{Binding Confirm, Mode=TwoWay}"
+                            BackgroundColor="Transparent"
+                            IsPassword="true"
+                            TextColor="White"
+                            PlaceholderColor="#A7A4CF"/>
+
+                        </Grid>
+
+                    </Border>
+
+                    <Label
+                   Text="{Binding ErrConfirm, Mode=TwoWay}"
+                   FontFamily="InterRegular"
+                   FontSize="14"
+                   TextColor="{StaticResource ErrorColor}"
+                   IsVisible="{Binding ErrConfirmVis, Mode=TwoWay}"
+                   Margin="11, 0, 0, 0"/>
+
+                </VerticalStackLayout>
+
+
+                <VerticalStackLayout
+                    Spacing="2"
+                    Margin="0,0,0,8">
+
+                    <Border Style="{StaticResource BeautifulEntry}">
+
+                        <Grid ColumnDefinitions="24,*"
+                              ColumnSpacing="0">
+
+
+                            <Image
+                            Source="birthday.png"
+                            Style="{StaticResource Icona}"/>
+
+                            <DatePicker
+                                Grid.Column="1"
+                                Format="dd/MM/yyyy"
+                                Date="{Binding BirthDate, Mode=TwoWay}"
+                                MinimumDate="1900-01-01"
+                                MaximumDate="{Binding MaxBirthDate}"
+                                BackgroundColor="Transparent"
+                                TextColor="White"
+                                FontFamily="InterRegular"
+                                FontSize="14"
+                                VerticalOptions="Center"
+                                HorizontalOptions="Fill"/>
+
+                        </Grid>
+
+                    </Border>
+
+                   <Label
+                   Text="{Binding ErrBirthday, Mode=TwoWay}"
+                   FontFamily="InterRegular"
+                   FontSize="14"
+                   TextColor="{StaticResource ErrorColor}"
+                   IsVisible="{Binding ErrBirthdayVis, Mode=TwoWay}"
+                   Margin="11, 0, 0, 0"/>
+
+                </VerticalStackLayout>
+
+                <Button
+                Text="Register"
+                Command="{Binding RegisterCommand}"
+                Style="{StaticResource BeautifulButton}"/>
+
+                <HorizontalStackLayout
+                    HorizontalOptions="Center"
+                    Spacing="4"
+                    Margin="0,15,0,5">
+
+                    <Label
+                    Text="Already have an account?"
+                    FontFamily="InterRegular"
+                    FontSize="16"
+                    TextColor="White"
+                    VerticalOptions="Center"/>
+
+
+                    <Label
+                    Text="Login"
+                    FontFamily="InterBold"
+                    FontSize="16"
+                    TextColor="{StaticResource Primary}"
+                    TextDecorations="Underline"
+                    VerticalOptions="Center">
+
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer
+                            Command="{Binding LoginCommand}"/>
+                        </Label.GestureRecognizers>
+
+                    </Label>
+
+                </HorizontalStackLayout>
+
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+    </Grid>
+
 </ContentPage>

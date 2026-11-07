@@ -9,6 +9,7 @@ using GonvoProect.ViewModels;
 using System.Text.RegularExpressions;
 using GonvoProect.Services;
 using GonvoProect.Views;
+using Microsoft.Win32;
 
 
 
@@ -16,146 +17,223 @@ namespace GonvoProect.ViewModel
 {
     internal class RegisterViewModel : ViewModelBase
     {
-
-        private string name = "";
-        public string Name
+        private string username;
+        public string Username
         {
-            get => name;
-            set => SetProperty(ref name, value);
+            get => username;
+            set => SetProperty(ref username, value);
         }
 
+        private string errusername;
+        public string ErrUsername
+        {
+            get => errusername;
+            set => SetProperty(ref errusername, value);
+        }
 
-        private string email ="";
+        private bool errusernamevis = false;
+        public bool ErrUsernameVis
+        {
+            get => errusernamevis;
+            set => SetProperty(ref errusernamevis, value);
+        }
+
+        private string email;
         public string Email
         {
             get => email;
             set => SetProperty(ref email, value);
         }
 
+        private string erremail;
+        public string ErrEmail
+        {
+            get => erremail;
+            set => SetProperty(ref erremail, value);
+        }
 
-        private string password = "";
+        private bool erremailvis = false;
+        public bool ErrEmailVis
+        {
+            get => erremailvis;
+            set => SetProperty(ref erremailvis, value);
+        }
+
+        private string password;
         public string Password
         {
             get => password;
             set => SetProperty(ref password, value);
         }
 
-        private string errName = "";
-        public string ErrName
-        {
-            get => errName;
-            set => SetProperty(ref errName, value);
-        }
-
-        private string errEmail = "";
-        public string ErrEmail
-        {
-            get => errEmail;
-            set => SetProperty(ref errEmail, value);
-        }
-
-
-        private string errPassword = "";
+        private string errpassword;
         public string ErrPassword
         {
-            get => errPassword;
-            set => SetProperty(ref errPassword, value);
+            get => errpassword;
+            set => SetProperty(ref errpassword, value);
         }
 
+        private bool errpasswordvis = false;
+        public bool ErrPasswordVis
+        {
+            get => errpasswordvis;
+            set => SetProperty(ref errpasswordvis, value);
+        }
 
-        private DateTime birthDate;
+        private string confirm;
+        public string Confirm
+        {
+            get => confirm;
+            set => SetProperty(ref confirm, value);
+        }
+
+        private string errconfirm;
+        public string ErrConfirm
+        {
+            get => errconfirm;
+            set => SetProperty(ref errconfirm, value);
+        }
+
+        private bool errconfirmvis = false;
+        public bool ErrConfirmVis
+        {
+            get => errconfirmvis;
+            set => SetProperty(ref errconfirmvis, value);
+        }
+
+        private DateTime birthDate = DateTime.Today;
         public DateTime BirthDate
         {
             get => birthDate;
             set => SetProperty(ref birthDate, value);
         }
 
-        private string errDate;
-        public string ErrDate
+        private string errbirthday;
+        public string ErrBirthday
         {
-            get => errDate;
-            set => SetProperty(ref errDate, value);
+            get => errbirthday;
+            set => SetProperty(ref errbirthday, value);
+        }
+
+        private bool errbirthdayvis = false;
+        public bool ErrBirthdayVis
+        {
+            get => errbirthdayvis;
+            set => SetProperty(ref errbirthdayvis, value);
+        }
+
+        private DateTime maxBirthDate = DateTime.Today;
+        public DateTime MaxBirthDate
+        {
+            get => maxBirthDate;
+            set => SetProperty(ref maxBirthDate, value);
+        }
+
+        private bool isPasswordHidden = true;
+
+        public bool IsPasswordHidden
+        {
+            get => isPasswordHidden;
+            set
+            {
+                SetProperty(ref isPasswordHidden, value);
+                OnPropertyChanged(nameof(PasswordEyeIcona));
+            }
+        }
+
+        public string PasswordEyeIcona =>
+            IsPasswordHidden ? "eye_off.png" : "eye.png" ;
+
+
+
+        public RegisterViewModel()
+        {
+            LoginCommand = new Command(Login);
+            RegisterCommand = new Command(Register);
+            EyeClickCommand = new Command(EyeClick);
         }
 
         public Command RegisterCommand { get; }
-        public RegisterViewModel()
-        {
-            RegisterCommand = new Command(Register);
-        }
+        public Command LoginCommand { get; }
+        public Command EyeClickCommand { get; }
 
-        private string successReg;
-        public string SuccessReg
+        public async void EyeClick()
         {
-            get => successReg;
-            set => SetProperty(ref successReg, value);
+            IsPasswordHidden ^= true;
         }
-
+        public async void Login()
+        {
+            await Shell.Current.GoToAsync($"///{nameof(LoginPage)}");
+        }
         private async void Register()
         {
             bool vaild = true;
-            if (Name == "" || Name == null)
+
+            if ( Username == null || Username == "")
             {
-                ErrName = "Name cannot be empty";
+                ErrUsername = "Username cannot be empty";
+                ErrUsernameVis = true;
                 vaild = false;
-            } else ErrName = "";
+            }
+            else ErrUsernameVis = false;
 
-
-            if (Email == "" || Email == null)
+            if ( Email == null || Email == "" )
             {
                 ErrEmail = "Email cannot be empty";
+                ErrEmailVis = true;
+                vaild = false;
+
             }
 
-            else if (!Regex.IsMatch(Email.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            else if (!Regex.IsMatch(Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
             {
-                ErrEmail = "Invalid email format";
+                ErrEmail = "Invalid email address";
+                ErrEmailVis = true;
                 vaild = false;
-            }
-            else if (DataRepository.UserExists(Email))
-            {
-                ErrEmail = "this email alrady have been used";
-                vaild = false;
-            }
-            else ErrEmail = "";
 
-            if (Password == "" || Password == null)
+            }
+            else ErrEmailVis = false;
+
+            if (Password == null || Password.Length < 8)
             {
-                ErrPassword = "Password cannot be empty";
+                ErrPassword = "Password must be at least 8 symbols";
+                ErrPasswordVis = true;
                 vaild = false;
             }
-            else if (Password.Length < 8)
+            else ErrPasswordVis = false;
+
+            if ( Confirm != Password)
             {
-                ErrPassword = "The Passowrd must be al least 8 symbols";
+                ErrConfirm = "you are lox";
+                ErrConfirmVis = true;
                 vaild = false;
             }
-            else ErrPassword = "";
+            else ErrConfirmVis = false;
+
 
             if (BirthDate >= DateTime.Today.AddYears(-5))
             {
-                ErrDate = "You must be older than 5 years old";
+                ErrBirthday = "Sorry, you are too young hahaha";
+                ErrBirthdayVis = true;
                 vaild = false;
             }
-            else ErrDate = "";
-
-
-
-
+            else ErrBirthdayVis = false;
 
             if (!vaild) return;
 
-            User user = new User
+
+            User user = new User()
             {
-                Name = Name,
-                Email = Email,
+                Username = Username,
                 Password = Password,
-                BirthDate = BirthDate,
-                MaxScore = 0
+                Email = Email,
+                BirthDate = BirthDate
             };
 
+            DataRepository.Add( user );
 
-            DataRepository.Add(user);
-
-            SuccessReg = "Let's gooooo";
             await Shell.Current.GoToAsync($"///{nameof(LoginPage)}");
         }
+
     }
 }

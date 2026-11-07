@@ -2,55 +2,174 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="GonvoProect.Views.LoginPage"
+             Shell.NavBarIsVisible="False"
              Title="LoginPage">
-    <VerticalStackLayout>
-        <Entry
-            Text="{Binding Email,Mode=TwoWay}"
-            Placeholder="Enter your Email"
-            BackgroundColor="White"
-            Margin="0,0,0,0"
-            />
+    
+    <Grid>
 
-        <Label
-            Text = "{Binding ErrEmail,Mode=TwoWay}"
-            TextColor="Red"
-            FontSize="12" 
-            />
+        <Image
+            Source="background.png"
+            Aspect="AspectFill"/>
 
-        <Entry
-            Text="{Binding Password,Mode=TwoWay}"
-            IsPassword="True"
-            Placeholder="Enter your Password"
-            BackgroundColor="White"
-            Margin="0,0,0,0"
-            />
-
-        <Label
-            Text="{Binding ErrPassword,Mode=TwoWay}"
-            TextColor="Red"
-            FontSize="12"            
-            />
-
-        <Button
-            Text="Sign uppp"
-            Command="{Binding SignUpCommand}" />
+        <BoxView
+        Color="#08091E"
+        Opacity="0.35"
+        InputTransparent="True"/>
 
 
-        <Label
-            Text="Don't have an account? Register"
-            TextColor="Blue"
-            HorizontalOptions="Center">
+        <ScrollView>
 
-            <Label.GestureRecognizers>
-                <TapGestureRecognizer
-                    Command="{Binding RegisterCommand}" />
-            </Label.GestureRecognizers>
+            <VerticalStackLayout
+                Padding="27,20,27,25"
+                Spacing="0"
+                HorizontalOptions="Center">
 
-        </Label>
 
-        <Label Style="{x:StaticResource Aura}"
-                Text="Tiki tiki"
-        />
-        
-    </VerticalStackLayout>
+                <Image
+                Source="logopic.png"
+                WidthRequest="110"
+                HeightRequest="75"
+                Aspect="AspectFit"
+                HorizontalOptions="Center"/>
+
+
+                <Label
+                Text="GONVO"
+                FontFamily="InterBold"
+                FontSize="29"
+                TextColor="White"
+                HorizontalOptions="Center"
+                Margin="0,0,0,20"/>
+
+
+
+
+                <Label
+                Text="darova priyatel"
+                FontFamily="InterRegular"
+                FontSize="24"
+                TextColor="White"
+                HorizontalOptions="Center"
+                Margin="0,0,0,10"/>
+
+                <VerticalStackLayout
+                    Spacing="7"
+                    Margin="0,0,0,5">
+
+                    <Border Style="{StaticResource BeautifulEntry}">
+
+                        <Grid ColumnDefinitions="24,*"
+                              ColumnSpacing="0">
+
+
+                            <Image
+                            Source="email.png"
+                            Style="{StaticResource Icona}"/>
+
+                            <Entry
+                            Grid.Column="1"
+                            Placeholder="Email"
+                            Text="{Binding Email, Mode=TwoWay}"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            PlaceholderColor="#A7A4CF"/>
+
+                        </Grid>
+
+                    </Border>
+
+                    <Border Style="{StaticResource BeautifulEntry}">
+
+                        <Grid ColumnDefinitions="24,*,30"
+                              ColumnSpacing="0">
+
+
+                            <Image
+                            Source="password.png"
+                            Style="{StaticResource Icona}"/>
+
+                            <Entry
+                            Grid.Column="1"
+                            Placeholder="Password"
+                            IsPassword="{Binding IsPasswordHidden}"    
+                            Text="{Binding Password, Mode=TwoWay}"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            PlaceholderColor="#A7A4CF"/>
+                            
+
+                            <ImageButton
+                            Grid.Column="2"
+                            Source="{Binding PasswordEyeIcona}"
+                            Command="{Binding EyeClickCommand}"
+                            BackgroundColor="Transparent"
+                            WidthRequest="30"
+                            HeightRequest="30"
+                            Padding="0"/>
+
+                        </Grid>
+
+                    </Border>
+
+                    <Label
+                   Text="{Binding Error, Mode=TwoWay}"
+                   FontFamily="InterRegular"
+                   FontSize="14"
+                   TextColor="{StaticResource ErrorColor}"
+                   IsVisible="{Binding ErrorVis, Mode=TwoWay}"
+                   Margin="11, 0, 0, 0"/>
+
+
+
+                    <Button
+                    Text="Login"
+                    Command="{Binding LoginCommand}"
+                    Style="{StaticResource BeautifulButton}"
+                    Margin="0, 0, 0, 0"/>
+                    
+                    
+                    <HorizontalStackLayout
+                        HorizontalOptions="Center"
+                        Spacing="4"
+                        Margin="0,15,0,10">
+
+                        <Label
+                        Text="Don't have an account?"
+                        FontFamily="InterRegular"
+                        FontSize="16"
+                        TextColor="White"
+                        VerticalOptions="Center"/>
+
+
+                        <Label
+                        Text="Register"
+                        FontFamily="InterBold"
+                        FontSize="16"
+                        TextColor="{StaticResource Primary}"
+                        TextDecorations="Underline"
+                        VerticalOptions="Center">
+
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer
+                                Command="{Binding RegisterCommand}"/>
+                            </Label.GestureRecognizers>
+
+                        </Label>
+
+                    </HorizontalStackLayout>
+
+
+
+                </VerticalStackLayout>
+
+
+
+
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+    </Grid>
+
 </ContentPage>

@@ -8,7 +8,8 @@
 
     <Color x:Key="IlyaPrimary">Blue</Color>
     <Color x:Key="IlyaSecondary">green</Color>
-    <Color x:Key="ErrColor">#FF5500</Color>
+    <Color x:Key="ErrorColor">#FF6B81</Color>
+    <Color x:Key="TextPrimary">#F7F5FF</Color>
     
     
     <Color x:Key="Primary">#512BD4</Color>

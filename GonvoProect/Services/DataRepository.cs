@@ -14,7 +14,7 @@ namespace GonvoProect.Services
         public static ObservableCollection< User > Data = new ObservableCollection<User>();
         
 
-        public static void Add( User user)
+        public static void Add( User user )
         {
             if( !UserExists(user.Email) )
                 Data.Add(user);
@@ -26,6 +26,8 @@ namespace GonvoProect.Services
 
         public static bool UserExists(string email, string password)
         {
+            if (email == null || email == "") return false;
+            if (password == null || password == "") return false;
             return Data.Any(user => user.Email == email && user.Password == password);
         }
     }

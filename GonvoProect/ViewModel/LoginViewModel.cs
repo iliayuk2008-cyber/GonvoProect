@@ -21,12 +21,6 @@ namespace GonvoProect.ViewModel
             set => SetProperty(ref email, value);
         }
 
-        private string errEmail = "";
-        public string ErrEmail
-        {
-            get => errEmail;
-            set => SetProperty(ref errEmail, value);
-        }
 
 
         private string password = "";
@@ -36,57 +30,68 @@ namespace GonvoProect.ViewModel
             set => SetProperty(ref password, value);
         }
 
-        private string errPassword = "";
-        public string ErrPassword
+        private string error = "";
+        public string Error
         {
-            get => errPassword;
-            set => SetProperty(ref errPassword, value);
+            get => error;
+            set => SetProperty(ref error, value);
+        }
+
+        private bool errorvis = false;
+        public bool ErrorVis
+        {
+            get => errorvis;
+            set => SetProperty(ref errorvis, value);
+        }
+
+        private bool isPasswordHidden = true;
+        public bool IsPasswordHidden
+        {
+            get => isPasswordHidden;
+            set => SetProperty(ref isPasswordHidden, value);
+        }
+
+        public string passwordEyeIcona = "eye_off.png";
+        public string PasswordEyeIcona
+        {
+            get => IsPasswordHidden ? "eye_off.png" : "eye.png";
         }
 
 
-        public Command SignUpCommand { get; }
+        public Command EyeClickCommand { get; }
+        public Command LoginCommand { get; }
         public Command RegisterCommand { get; }
         public LoginViewModel()
         {
-            SignUpCommand = new Command(SignUp);
+            EyeClickCommand = new Command(EyeClick);
+            LoginCommand = new Command(Login);
             RegisterCommand = new Command(Register);
         }
+
+        public async void EyeClick()
+        {
+            IsPasswordHidden ^= true;
+            OnPropertyChanged(nameof(PasswordEyeIcona));
+        }
+
 
         private async void Register()
         {
             await Shell.Current.GoToAsync($"///{nameof(RegisterPage)}");
         }
-        private async void SignUp()
+        private async void Login()
         {
-            bool vaild = true;
 
-            if(!Regex.IsMatch(Email.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            if( DataRepository.UserExists(Email, Password) )
             {
-                ErrEmail = "Invalid email format";
-                vaild = false;
-            }
-            else ErrEmail = "";
-
-
-            if (Password == "" || Password == null)
-            {
-                ErrPassword = "Password cannot be empty";
-                vaild = false;
-            }
-            else ErrPassword = "";
-
-
-            if (!vaild) return;
-            if (!DataRepository.UserExists(Email, Password))
-            {
-                ErrPassword = "Password or Email is incorrect";
-                ErrEmail = "Password or Email is incorrect";
-                vaild = false;
-            }
-
-            if (!vaild) return;
-
                 await Shell.Current.GoToAsync($"///{nameof(MainPage)}");
+                return;
+            }
+
+            ErrorVis = true;
+            Error = "The Email or Password is not correct";
+
+            
         }
 
     }
